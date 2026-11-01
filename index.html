@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Egor</title>
+<link rel="icon" href="logo.png">
+<style>
+:root{--bg:#f3f4fb;--panel:#fff;--text:#16182b;--muted:#7a7f9a;--line:#e4e6f2;--brand:#5b5bf0;--brand2:#8b4be8;--their:#eceefa;--ok:#22c55e}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0e0f1a;--panel:#171829;--text:#eef0ff;--muted:#8d92b0;--line:#26283f;--their:#23253d}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;background:var(--their);color:var(--text);padding:9px 13px}
+button.p{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);color:var(--text);width:100%}
+#auth{height:100%;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand),var(--brand2));padding:16px}
+#auth .box{background:var(--panel);border-radius:20px;padding:26px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}
+#auth img{width:72px;height:72px;border-radius:18px;align-self:center}#auth h1{margin:0;text-align:center}
+.tabs{display:flex;gap:6px}.tabs button{flex:1}.tabs .on{background:var(--brand);color:#fff}
+#aerr{color:#e5484d;min-height:20px;font-size:14px}
+#app{display:none;height:100%;max-width:1100px;margin:0 auto;background:var(--panel)}
+#side{width:320px;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:700;font-size:20px}
+.brand img{width:36px;height:36px;border-radius:9px}.brand span{flex:1}.brand button{padding:5px 9px;font-size:13px}
+#addrow{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+#list{overflow:auto;flex:1}
+.ct{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--line)}
+.ct:hover,.ct.on{background:var(--their)}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none;position:relative;background:linear-gradient(135deg,var(--brand),var(--brand2))}
+.av.on::after{content:"";position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--panel)}
+.nm{font-weight:600}.sub{color:var(--muted);font-size:13px}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#head{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line)}
+#head .t{flex:1;min-width:0}#back{display:none}
+#msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.m{max-width:75%;padding:8px 12px;border-radius:16px;background:var(--their);align-self:flex-start;word-wrap:break-word;white-space:pre-wrap}
+.m.me{background:var(--brand);color:#fff;align-self:flex-end}
+.m small{display:block;color:var(--muted);font-size:12px}.m.me small{color:#dcdcff}
+#bar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.empty{margin:auto;color:var(--muted);text-align:center}
+#call{position:fixed;inset:0;background:rgba(10,10,25,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;z-index:9}
+#call video{max-width:92vw;max-height:60vh;border-radius:14px;background:#000}
+#lv{width:120px;position:absolute;right:16px;bottom:100px}
+@media (max-width:700px){#side{width:100%}#main{display:none}#app.chat #side{display:none}#app.chat #main{display:flex}#back{display:inline-block}}
+</style>
+</head>
+<body>
+<div id="auth"><div class="box">
+ <img src="logo.png" alt="Egor"><h1>Egor</h1>
+ <div class="tabs"><button id="tl" class="on">Вход</button><button id="tr">Регистрация</button></div>
+ <input id="au" placeholder="Юзернейм" autocomplete="username">
+ <input id="ae" type="email" placeholder="Почта" style="display:none" autocomplete="email">
+ <input id="ap" type="password" placeholder="Пароль" autocomplete="current-password">
+ <div id="aerr"></div><button class="p" id="ago">Войти</button>
+</div></div>
+
+<div id="app">
+ <aside id="side">
+  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="out">Выйти</button></div>
+  <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
+  <div id="list"></div>
+ </aside>
+ <section id="main">
+  <div id="head"><button id="back">←</button><div class="t"><div class="nm" id="title">Выбери чат</div><div class="sub" id="st"></div></div>
+   <button id="ca">📞</button><button id="cv">🎥</button></div>
+  <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
+  <div id="bar"><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send">Отправить</button></div>
+ </section>
+</div>
+<div id="call"><div id="cs" style="font-size:20px"></div><video id="rv" autoplay playsinline></video><video id="lv" autoplay playsinline muted></video>
+ <div><button class="p" id="acc" style="display:none">Принять</button> <button id="end" style="background:#e5484d;color:#fff">Завершить</button></div></div>
+
+<script type="module">
+import firebaseConfig from './firebase-config.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const DOMAIN='@egor.app'; // служебный адрес для входа по юзернейму
+let mode='login',registering=false,uid=null,me=null,friends=new Map(),seen={},cur=null,msgs=[],unMsgs=null,unFr=null,unSig=null,hb=null;
+const pres={},presUn={};
+const ckey=o=>[uid,o].sort().join('_');
+const isOn=f=>seen[f]&&Date.now()-seen[f]<50000;
+
+/* ---- вход / регистрация ---- */
+function setMode(m){mode=m;$('#tl').classList.toggle('on',m==='login');$('#tr').classList.toggle('on',m==='reg');
+ $('#ae').style.display=m==='reg'?'':'none';$('#ago').textContent=m==='reg'?'Создать аккаунт':'Войти';$('#aerr').textContent=''}
+$('#tl').onclick=()=>setMode('login');$('#tr').onclick=()=>setMode('reg');
+async function go(){
+ const u=$('#au').value.trim().toLowerCase(),pw=$('#ap').value,em=$('#ae').value.trim(),err=t=>$('#aerr').textContent=t;
+ try{
+  if(mode==='reg'){
+   if(!/^[a-z0-9_]{3,20}$/.test(u))return err('Юзернейм: 3–20 символов, латиница, цифры, _');
+   if(!/^\S+@\S+\.\S+$/.test(em))return err('Некорректная почта');
+   if(pw.length<6)return err('Пароль минимум 6 символов');
+   registering=true;
+   const c=await createUserWithEmailAndPassword(auth,u+DOMAIN,pw);
+   await setDoc(doc(db,'usernames',u),{uid:c.user.uid});
+   await setDoc(doc(db,'users',c.user.uid),{username:u,email:em});
+   registering=false;start(c.user.uid,u);
+  }else await signInWithEmailAndPassword(auth,u+DOMAIN,pw);
+ }catch(e){registering=false;
+  const m={'auth/email-already-in-use':'Юзернейм занят','auth/invalid-credential':'Неверный юзернейм или пароль','auth/weak-password':'Слишком простой пароль','auth/too-many-requests':'Слишком много попыток, подождите'};
+  err(m[e.code]||'Ошибка: '+(e.code||e.message))}
+}
+$('#ago').onclick=go;$('#ap').onkeydown=e=>{if(e.key==='Enter')go()};
+$('#out').onclick=async()=>{await signOut(auth);location.reload()};
+onAuthStateChanged(auth,async u=>{
+ if(registering||!u||uid)return;
+ const d=await getDoc(doc(db,'users',u.uid));if(d.exists())start(u.uid,d.data().username);
+});
+
+/* ---- запуск ---- */
+function start(id,name){
+ uid=id;me=name;$('#auth').style.display='none';$('#app').style.display='flex';
+ const beat=()=>setDoc(doc(db,'presence',uid),{t:Date.now()});beat();hb=setInterval(()=>{beat();renderList();head()},20000);
+ unFr=onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{
+  friends=new Map();
+  s.docs.forEach(d=>{const x=d.data(),o=x.members.find(m=>m!==uid);friends.set(o,{name:x.names[o]||'друг',key:d.id});
+   if(!presUn[o])presUn[o]=onSnapshot(doc(db,'presence',o),p=>{seen[o]=p.exists()?p.data().t:0;renderList();head()})});
+  renderList()});
+ unSig=onSnapshot(collection(db,'users',uid,'signals'),s=>s.docChanges().forEach(ch=>{
+  if(ch.type!=='added')return;const x=ch.doc.data();deleteDoc(ch.doc.ref);
+  if(Date.now()-x.ts<30000)onSig(x.from,JSON.parse(x.d))}));
+}
+
+/* ---- чаты ---- */
+function renderList(){
+ const L=$('#list');L.textContent='';if(!friends.size)L.append(el('div','empty','Пока нет друзей'));
+ [...friends].sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
+  r.append(el('div','av'+(on?' on':''),f.name[0].toUpperCase()));
+  const w=el('div');w.append(el('div','nm',f.name),el('div','sub',on?'в сети':'не в сети'));r.append(w);r.onclick=()=>openChat(id);L.append(r)});
+}
+function head(){if(cur&&friends.has(cur)){$('#title').textContent='@'+friends.get(cur).name;$('#st').textContent=isOn(cur)?'в сети':'не в сети'}}
+function openChat(f){
+ cur=f;$('#app').classList.add('chat');head();renderList();msgs=[];renderMsgs();unMsgs&&unMsgs();
+ unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs()});
+}
+function renderMsgs(){
+ const B=$('#msgs');B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
+ msgs.forEach(m=>{const d=el('div','m'+(m.from===uid?' me':''),m.text);
+  d.append(el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));B.append(d)});
+ B.scrollTop=B.scrollHeight;
+}
+async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';
+ try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
+$('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
+$('#back').onclick=()=>$('#app').classList.remove('chat');
+async function addFriend(){
+ const u=$('#addu').value.trim().replace(/^@/,'').toLowerCase();if(!u)return;$('#addu').value='';
+ if(u===me)return;
+ const d=await getDoc(doc(db,'usernames',u));if(!d.exists())return alert('Пользователь не найден');
+ const o=d.data().uid;if(friends.has(o))return alert('Уже в друзьях');
+ await setDoc(doc(db,'friendships',ckey(o)),{members:[uid,o],names:{[uid]:me,[o]:u}});
+}
+$('#addb').onclick=addFriend;$('#addu').onkeydown=e=>{if(e.key==='Enter')addFriend()};
+
+/* ---- звонки (WebRTC, сигналы через Firestore) ---- */
+let pc=null,stream=null,peer=null,pend=[],inc=null;
+const sig=(to,d)=>addDoc(collection(db,'users',to,'signals'),{from:uid,d:JSON.stringify(d),ts:Date.now()}).catch(()=>{});
+const ui=(s,a)=>{$('#call').style.display='flex';$('#cs').textContent=s;$('#acc').style.display=a?'':'none'};
+async function setup(v){
+ stream=await navigator.mediaDevices.getUserMedia({audio:true,video:v});
+ pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+ pc.ontrack=e=>{$('#rv').srcObject=e.streams[0]};pc.onicecandidate=e=>e.candidate&&sig(peer,{k:'ice',c:e.candidate.toJSON()});
+ pc.onconnectionstatechange=()=>{if(!pc)return;if(pc.connectionState==='connected')$('#cs').textContent='Разговор идёт';if(pc.connectionState==='failed')end(true)};
+ $('#lv').srcObject=stream;$('#lv').style.display=v?'':'none';
+}
+async function flush(){for(const c of pend)try{await pc.addIceCandidate(c)}catch(e){}pend=[]}
+async function call(v){
+ if(pc||inc||!cur)return;peer=cur;
+ try{await setup(v)}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(false);return}
+ const o=await pc.createOffer();await pc.setLocalDescription(o);
+ sig(peer,{k:'offer',sdp:pc.localDescription.toJSON(),video:v});ui('Звоним @'+friends.get(peer).name+'…');
+}
+async function accept(){
+ ui('Соединяем…');try{await setup(inc.video)}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(true);return}
+ await pc.setRemoteDescription(inc.sdp);await flush();
+ const a=await pc.createAnswer();await pc.setLocalDescription(a);sig(peer,{k:'answer',sdp:pc.localDescription.toJSON()});inc=null;$('#acc').style.display='none';
+}
+function end(n){if(n&&peer)sig(peer,{k:'bye'});pc&&pc.close();pc=null;stream&&stream.getTracks().forEach(t=>t.stop());stream=null;peer=null;inc=null;pend=[];
+ $('#call').style.display='none';$('#rv').srcObject=null}
+async function onSig(from,d){
+ if(!friends.has(from))return;
+ if(d.k==='offer'){if(pc||inc){sig(from,{k:'bye'});return}inc={sdp:d.sdp,video:d.video};peer=from;ui('Звонит @'+friends.get(from).name+(d.video?' (видео)':''),true)}
+ else if(from!==peer)return;
+ else if(d.k==='answer'&&pc){await pc.setRemoteDescription(d.sdp);await flush()}
+ else if(d.k==='ice'){if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(d.c)}catch(e){}else pend.push(d.c)}
+ else if(d.k==='bye')end(false);
+}
+$('#ca').onclick=()=>call(false);$('#cv').onclick=()=>call(true);$('#acc').onclick=accept;$('#end').onclick=()=>end(true);
+</script>
+</body>
+</html>
