@@ -57,6 +57,28 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 #lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;place-items:center;z-index:10;cursor:zoom-out;animation:fade .2s}
 #lb img{max-width:94vw;max-height:94vh;border-radius:10px;animation:pop .25s}
 @media (max-width:700px){#side{width:100%;max-width:100%}#main{display:none}#app.chat #side{display:none}#app.chat #main{display:flex}#back{display:inline-block}.m{max-width:85%}}
+
+.av.prem{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #f5b301}
+.brand{gap:6px}.brand button{padding:6px 8px}
+#mod{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:8;animation:fade .2s}
+#mod .card{background:var(--panel);border-radius:18px;padding:18px;width:min(580px,94vw);max-height:88vh;overflow:auto;animation:pop .25s}
+.mh{display:flex;justify-content:space-between;align-items:center;font-size:18px;margin-bottom:8px}
+.sec{font-weight:700;margin:14px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.gift,.gcard{border-radius:14px;padding:10px;text-align:center;border:1px solid var(--line);background:var(--panel);color:var(--text)}
+.gift{cursor:pointer;transition:transform .15s}.gift:hover{transform:translateY(-3px) scale(1.04)}
+.gift .e,.gcard .e{font-size:44px;line-height:1.2}.gift img,.gcard img{width:64px;height:64px;border-radius:12px;object-fit:cover;margin:0!important;max-height:none!important}
+.gcard{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:140px;animation:pop .4s}
+.num{font-size:11px;color:var(--muted)}
+.r1{background-image:linear-gradient(135deg,#3b82f633,#06b6d433)}.r2{background-image:linear-gradient(135deg,#8b5cf655,#ec489944)}
+.r3{background-image:linear-gradient(135deg,#f59e0b66,#ef444444);box-shadow:0 0 16px #f59e0b66}
+.hero{text-align:center;padding:10px}.hero .e{font-size:56px;animation:pulse 2s infinite;border-radius:50%;display:inline-block}
+.perk{padding:7px 10px;border-radius:10px;background:var(--their);margin:5px 0}
+.sw{display:flex;gap:8px;flex-wrap:wrap}.swb{width:36px;height:36px;border-radius:50%!important;padding:0!important}
+.form{display:flex;flex-direction:column;gap:8px}.form select{font:inherit;padding:10px;border-radius:10px;background:var(--bg);color:var(--text);border:1px solid var(--line)}
+.form label{display:flex;gap:8px;align-items:center}.form label input{width:auto}
+.row{display:flex;gap:8px;align-items:center;margin:4px 0}.row span{flex:1}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:14px;z-index:20;animation:pop .3s;box-shadow:0 8px 30px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -71,19 +93,20 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Сменить аватарку"></span><button id="out">Выйти</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="mine" title="Мои подарки">🎒</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Сменить аватарку"></span><button id="out" title="Выйти">⏻</button></div>
   <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
  <section id="main">
   <div id="head"><button id="back">←</button><span id="hav"></span><div class="t"><div class="nm" id="title">Выбери чат</div><div class="sub" id="st"></div></div>
-   <button id="ca">📞</button><button id="cv">🎥</button></div>
+   <button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
   <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
   <div id="bar"><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send">Отправить</button></div>
  </section>
 </div>
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
 <div id="lb"><img alt=""></div>
+<div id="mod"><div class="card"></div></div>
 <div id="call"><div id="cav"></div><div id="cs" style="font-size:20px"></div><video id="rv" autoplay playsinline></video><video id="lv" autoplay playsinline muted></video>
  <div><button class="p" id="acc" style="display:none">Принять</button> <button id="end" style="background:#e5484d;color:#fff">Завершить</button></div></div>
 
@@ -91,7 +114,7 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 import firebaseConfig from './firebase-config.js';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -100,9 +123,11 @@ const DOMAIN='@egor.app';
 let mode='login',registering=false,uid=null,me=null,friends=new Map(),seen={},avs={},last={},unread={},cur=null,msgs=[],unMsgs=null,shown=0;
 const presUn={},lastUn={},boot=Date.now();
 const ckey=o=>[uid,o].sort().join('_');
+let prem={},cat={},cols={},myGifts=[];
+const isPrem=id=>(prem[id]||0)>Date.now();
 const isOn=f=>seen[f]&&Date.now()-seen[f]<50000;
 const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.img&&!x.text?'📷 Фото':x.text):'';
-const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;return d};
+const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem');return d};
 
 /* ---- звуки (генерируются в браузере) ---- */
 let ac,muted=false;try{muted=localStorage.getItem('egor_mute')==='1'}catch(e){}
@@ -171,13 +196,13 @@ onAuthStateChanged(auth,async u=>{
 /* ---- запуск ---- */
 function renderMe(){const s=$('#meav');s.textContent='';s.append(avEl(uid,me,'sm'))}
 function start(id,name){
- uid=id;me=name;$('#auth').style.display='none';$('#app').style.display='flex';renderMe();
+ uid=id;me=name;$('#auth').style.display='none';$('#app').style.display='flex';renderMe();listen();
  const beat=()=>setDoc(doc(db,'presence',uid),{t:Date.now()},{merge:true});beat();setInterval(()=>{beat();renderList();head()},20000);
- onSnapshot(doc(db,'presence',uid),p=>{if(p.exists()&&p.data().av){avs[uid]=p.data().av;renderMe()}});
+ onSnapshot(doc(db,'presence',uid),p=>{if(p.exists()){const v=p.data();if(v.av)avs[uid]=v.av;cols[uid]=v.col||'';renderMe();renderMsgs()}});
  onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{
   friends=new Map();
   s.docs.forEach(d=>{const x=d.data(),o=x.members.find(m=>m!==uid);friends.set(o,{name:x.names[o]||'друг',key:d.id});
-   if(!presUn[o])presUn[o]=onSnapshot(doc(db,'presence',o),p=>{const v=p.exists()?p.data():{};seen[o]=v.t||0;if(v.av)avs[o]=v.av;renderList();head()});
+   if(!presUn[o])presUn[o]=onSnapshot(doc(db,'presence',o),p=>{const v=p.exists()?p.data():{};seen[o]=v.t||0;if(v.av)avs[o]=v.av;cols[o]=v.col||'';renderList();head()});
    if(!lastUn[o])lastUn[o]=onSnapshot(query(collection(db,'friendships',d.id,'messages'),orderBy('ts'),limitToLast(1)),m=>m.docChanges().forEach(ch=>{
     if(ch.type!=='added')return;const x=ch.doc.data();last[o]=x;
     if(x.from!==uid&&x.ts>boot){if(cur===o&&!document.hidden)snd.recv();else{unread[o]=(unread[o]||0)+1;snd.recv();updTitle()}}
@@ -195,10 +220,10 @@ function renderList(){
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
-  const w=el('div','w');w.append(el('div','nm',f.name),el('div','sub',prev(last[id])||(on?'в сети':'не в сети')));r.append(w);
+  const w=el('div','w');w.append(el('div','nm',f.name+(isPrem(id)?' ⭐':'')),el('div','sub',prev(last[id])||(on?'в сети':'не в сети')));r.append(w);
   if(unread[id])r.append(el('span','bd',unread[id]));r.onclick=()=>openChat(id);L.append(r)});
 }
-function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);$('#title').textContent='@'+f.name;$('#st').textContent=isOn(cur)?'в сети':'не в сети';
+function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);$('#title').textContent='@'+f.name+(isPrem(cur)?' ⭐':'');$('#st').textContent=isOn(cur)?'в сети':'не в сети';
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
  cur=f;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
@@ -207,8 +232,12 @@ function openChat(f){
 function renderMsgs(){
  const B=$('#msgs');B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
  msgs.forEach((m,i)=>{const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
-  if(m.img){const im=el('img');im.src=m.img;im.onclick=()=>zoom(m.img);d.append(im)}
-  if(m.text)d.append(document.createTextNode(m.text));
+  const col=isPrem(m.from)&&cols[m.from];if(col){d.style.background=`linear-gradient(135deg,${col},${col}bb)`;d.style.color='#fff'}
+  if(m.gift){const c=cat[m.gift.t]||{name:'Подарок',emoji:'🎁',rarity:0},g=el('div','gcard r'+(c.rarity||0));
+   if(c.img){const im=el('img');im.src=c.img;g.append(im)}else g.append(el('div','e',c.emoji||'🎁'));
+   g.append(el('b','',c.name),el('div','num',m.gift.n?'NFT №'+m.gift.n:'Подарок'));d.append(g)}
+  else{if(m.img){const im=el('img');im.src=m.img;im.onclick=()=>zoom(m.img);d.append(im)}
+   if(m.text)d.append(document.createTextNode(m.text))}
   d.append(el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));B.append(d)});
  shown=msgs.length;B.scrollTop=B.scrollHeight;
 }
@@ -224,6 +253,91 @@ async function addFriend(){
  await setDoc(doc(db,'friendships',ckey(o)),{members:[uid,o],names:{[uid]:me,[o]:u}});
 }
 $('#addb').onclick=addFriend;$('#addu').onkeydown=e=>{if(e.key==='Enter')addFriend()};
+
+
+/* ---- Косухость+, подарки, админка ---- */
+let isAdm=false;
+function listen(){
+ onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();$('#adm').style.display=isAdm?'':'none'});
+ onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);renderMe();renderList();head();renderMsgs()});
+ onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());renderMsgs()});
+ let first=true;
+ onSnapshot(query(collection(db,'gifts'),where('owner','==',uid)),s=>{
+  myGifts=s.docs.map(d=>({...d.data(),id:d.id}));
+  if(!first)s.docChanges().forEach(ch=>{if(ch.type==='added'){const g=ch.doc.data();snd.recv();toast('🎁 Тебе подарили: '+((cat[g.type]||{}).name||'подарок')+(g.n?' №'+g.n:'')+' от '+(g.fromName||'?'))}});
+  first=false});
+}
+const mod=$('#mod'),card=mod.firstElementChild;
+mod.onclick=e=>{if(e.target===mod)mod.style.display='none'};
+function openMod(title,fill){card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
+const sec=(c,t)=>c.append(el('div','sec',t));
+function toast(t){const d=el('div','toast',t);document.body.append(d);setTimeout(()=>d.remove(),3500)}
+function giftEl(g,onclick,sub){
+ const c=cat[g.type]||{name:'?',emoji:'🎁',rarity:0},d=el('div','gift r'+(c.rarity||0));
+ if(c.img){const i=el('img');i.src=c.img;d.append(i)}else d.append(el('div','e',c.emoji||'🎁'));
+ d.append(el('div','nm',c.name),el('div','num',sub||((g.n?'№'+g.n:'без номера')+(g.fromName?' · от '+g.fromName:''))));
+ if(c.premium)d.append(el('div','num','⭐ Косухость+'));
+ if(onclick)d.onclick=onclick;return d}
+const giftMsg=(to,g,text)=>addDoc(collection(db,'friendships',ckey(to),'messages'),{from:uid,text,gift:g,ts:Date.now()});
+async function sendFree(id,to){const c=cat[id];try{snd.send();
+ await addDoc(collection(db,'gifts'),{type:id,owner:to,ownerName:friends.get(to).name,fromUid:uid,fromName:me,n:0,ts:Date.now()});
+ await giftMsg(to,{t:id,n:0},'🎁 Подарок: '+c.name)}catch(e){toast('Не удалось отправить подарок')}}
+async function transfer(g,to){try{snd.send();
+ await updateDoc(doc(db,'gifts',g.id),{owner:to,ownerName:friends.get(to).name,fromUid:uid,fromName:me});
+ await giftMsg(to,{t:g.type,n:g.n},'🎁 Подарок: '+cat[g.type].name+(g.n?' №'+g.n:''))}catch(e){toast('Не удалось передать подарок')}}
+function openGifts(){
+ if(!cur)return toast('Сначала выбери чат');const to=cur,fn=friends.get(to).name;
+ openMod('🎁 Подарки для @'+fn,async c=>{
+  sec(c,'Отправить бесплатный подарок');const g1=el('div','grid');
+  Object.entries(cat).filter(([,x])=>x.free).forEach(([id,x])=>{const lock=x.premium&&!isPrem(uid);
+   g1.append(giftEl({type:id},()=>{if(lock)return toast('Нужна Косухость+ ⭐');sendFree(id,to);mod.style.display='none'},lock?'🔒 Косухость+':'Бесплатно'))});
+  if(!g1.children.length)g1.append(el('div','sub','Админ ещё не добавил подарки'));c.append(g1);
+  sec(c,'Мои NFT-подарки — передать @'+fn);const g2=el('div','grid');
+  myGifts.forEach(g=>g2.append(giftEl(g,()=>{if(confirm('Подарить «'+(cat[g.type]||{}).name+'»'+(g.n?' №'+g.n:'')+' пользователю @'+fn+'? Вернуть нельзя.')){transfer(g,to);mod.style.display='none'}})));
+  if(!g2.children.length)g2.append(el('div','sub','У тебя пока нет подарков'));c.append(g2);
+  sec(c,'Коллекция @'+fn);const g3=el('div','grid');c.append(g3);
+  (await getDocs(query(collection(db,'gifts'),where('owner','==',to)))).docs.forEach(d=>g3.append(giftEl(d.data())));
+  if(!g3.children.length)g3.append(el('div','sub','Пусто'))})}
+function openMine(){openMod('🎒 Мои подарки ('+myGifts.length+')',c=>{const g=el('div','grid');myGifts.forEach(x=>g.append(giftEl(x)));
+ if(!myGifts.length)g.append(el('div','sub','Пока пусто. Подарки появятся, когда друзья или админ их тебе подарят.'));c.append(g)})}
+function openPlus(){openMod('⭐ Косухость+',c=>{
+ const on=isPrem(uid),hero=el('div','hero');
+ hero.append(el('div','e','⭐'),el('h2','','Косухость+'),el('div','sub',on?'Активна до '+new Date(prem[uid]).toLocaleDateString():'Не активна'));c.append(hero);
+ ['⭐ Значок рядом с именем','🟡 Золотое кольцо вокруг аватарки','🎨 Свой цвет сообщений','🎁 Эксклюзивные подарки','✨ Скоро: ещё больше возможностей'].forEach(t=>c.append(el('div','perk',t)));
+ if(on){sec(c,'Цвет твоих сообщений');const row=el('div','sw');
+  ['#5b5bf0','#e5484d','#f59e0b','#10b981','#ec4899','#06b6d4','#111827'].forEach(col=>{const b=el('button','swb');b.style.background=col;
+   b.onclick=async()=>{await setDoc(doc(db,'presence',uid),{col},{merge:true});toast('Цвет сохранён')};row.append(b)});c.append(row)}
+ else c.append(el('div','sub','Оплаты в Egor пока нет: Косухость+ выдаёт администратор. Попроси его 😉'))})}
+const uidOf=async u=>{const d=await getDoc(doc(db,'usernames',u.trim().replace(/^@/,'').toLowerCase()));return d.exists()?d.data().uid:null};
+function openAdmin(){openMod('🛡️ Панель админа',c=>{
+ const q=(p,s)=>p.querySelector(s);
+ sec(c,'Создать подарок');const f=el('div','form');
+ f.innerHTML='<input class="gn" placeholder="Название"><input class="ge" placeholder="Эмодзи (например 🦄)"><input class="gi" type="file" accept="image/*"><select class="gr"><option value="0">Обычный</option><option value="1">Редкий</option><option value="2">Эпик</option><option value="3">Легендарный</option></select><label><input class="gfr" type="checkbox"> Бесплатный (все могут отправлять)</label><label><input class="gpr" type="checkbox"> Только для Косухость+</label><button class="p gmk">Создать</button>';
+ c.append(f);
+ q(f,'.gmk').onclick=async()=>{const name=q(f,'.gn').value.trim(),emoji=q(f,'.ge').value.trim(),file=q(f,'.gi').files[0];
+  if(!name||(!emoji&&!file))return toast('Нужны название и эмодзи или картинка');
+  await setDoc(doc(db,'catalog','c'+Date.now().toString(36)),{name,emoji,img:file?await shrink(file,160,.85,true):'',rarity:+q(f,'.gr').value,free:q(f,'.gfr').checked,premium:q(f,'.gpr').checked,ts:Date.now()});
+  toast('Подарок создан');openAdmin()};
+ const seed=el('button','','Создать стартовый набор');seed.style.marginTop='8px';
+ seed.onclick=async()=>{const S=[['Мишка','🧸',0,1,0],['Роза','🌹',0,1,0],['Торт','🎂',0,1,0],['Ракета','🚀',1,1,0],['Алмаз','💎',2,1,0],['Корона','👑',2,1,1],['Единорог','🦄',3,0,0],['Дракон','🐉',3,0,0]];
+  for(const [name,emoji,rarity,free,pr] of S)await setDoc(doc(db,'catalog','s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),{name,emoji,img:'',rarity,free:!!free,premium:!!pr,ts:Date.now()});
+  toast('Набор создан');openAdmin()};c.append(seed);
+ sec(c,'Выдать NFT-подарок (с номером)');const m=el('div','form'),opts=Object.entries(cat).map(([id,x])=>`<option value="${id}">${x.emoji||'🖼️'} ${x.name.replace(/[<&]/g,'')}</option>`).join('');
+ m.innerHTML='<select class="mt">'+opts+'</select><input class="mu" placeholder="Юзернейм получателя"><button class="p mb">Выдать</button>';c.append(m);
+ q(m,'.mb').onclick=async()=>{const t=q(m,'.mt').value,u=q(m,'.mu').value.trim().replace(/^@/,'').toLowerCase(),o=await uidOf(u);
+  if(!t||!o)return toast('Пользователь или подарок не найден');
+  const all=await getDocs(query(collection(db,'gifts'),where('type','==',t))),n=Math.max(0,...all.docs.map(d=>d.data().n||0))+1;
+  await addDoc(collection(db,'gifts'),{type:t,owner:o,ownerName:u,fromUid:'admin',fromName:'Админ',n,ts:Date.now()});toast('Выдан №'+n+' пользователю @'+u)};
+ sec(c,'Косухость+');const p=el('div','form');
+ p.innerHTML='<input class="pu" placeholder="Юзернейм"><input class="pd" type="number" value="30" min="1" placeholder="Дней"><div class="row"><button class="p pg">Выдать</button><button class="pr">Забрать</button></div>';c.append(p);
+ q(p,'.pg').onclick=async()=>{const o=await uidOf(q(p,'.pu').value);if(!o)return toast('Не найден');
+  await setDoc(doc(db,'premium',o),{until:Math.max(Date.now(),prem[o]||0)+(+q(p,'.pd').value||30)*864e5});toast('Косухость+ выдана')};
+ q(p,'.pr').onclick=async()=>{const o=await uidOf(q(p,'.pu').value);if(!o)return toast('Не найден');await deleteDoc(doc(db,'premium',o));toast('Забрана')};
+ sec(c,'Каталог подарков');
+ Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')));
+  const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить «'+x.name+'» из каталога?')){await deleteDoc(doc(db,'catalog',id));openAdmin()}};r.append(b);c.append(r)});
+})}
+$('#plus').onclick=openPlus;$('#mine').onclick=openMine;$('#adm').onclick=openAdmin;$('#gf').onclick=openGifts;
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null;
