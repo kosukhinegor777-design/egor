@@ -140,6 +140,28 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 #call.incoming #cbar,#call.incoming #self,#call.incoming #cmin{display:none}#call:not(.incoming) #cin{display:none}
 #cpill{display:none;position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:11;background:#22c55e;color:#fff;padding:8px 18px;border-radius:24px;cursor:pointer;gap:8px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.4);animation:pop .3s}
 @media (max-width:700px){#self{width:120px;height:90px;top:64px}.av.xl{width:150px;height:150px;font-size:60px}#cbar{gap:8px}.cb{width:50px;height:50px}}
+
+.brand{flex-wrap:wrap;row-gap:6px}
+#mod .card.wide{width:min(1100px,96vw)}
+.cbalrow{padding:8px 12px;background:var(--their);border-radius:12px;margin-bottom:10px;font-size:15px}
+.cbody{display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:stretch}
+.cbody .row input,.cbody>input[type=number]{max-width:140px}
+.gres{min-height:34px;text-align:center;font-size:18px;font-weight:700}.gres.win{color:#22c55e;animation:pop .3s}.gres.lose{color:#ef4444}
+.coin{font-size:96px;text-align:center;line-height:1.1}.coin.spin{animation:cflip 1.3s ease-in-out}
+@keyframes cflip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(900deg) translateY(-50px)}100%{transform:rotateY(1800deg) translateY(0)}}
+.dbar{position:relative;height:18px;border-radius:9px;background:#ef444455;margin:14px 6px}
+.dzone{height:100%;border-radius:9px;background:#22c55e;transition:width .15s}
+.dmk{position:absolute;top:-5px;width:5px;height:28px;border-radius:3px;background:var(--text);left:0;transition:left .07s}
+.dnum{text-align:center;font-size:54px;font-weight:800}
+.reels{display:flex;gap:10px;justify-content:center}.reel{font-size:60px;width:92px;height:92px;border-radius:16px;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center}
+.upg{display:grid;grid-template-columns:1fr 280px 1fr;gap:14px;align-items:start}
+.upp{background:var(--bg);border-radius:14px;padding:12px;max-height:56vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.upc{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.wheel{position:relative;width:260px;height:260px}.wheel svg{width:100%;height:100%}
+.aw{position:absolute;inset:0}
+.ar{position:absolute;left:50%;top:-6px;width:0;height:0;margin-left:-9px;border-left:9px solid transparent;border-right:9px solid transparent;border-top:22px solid #facc15;filter:drop-shadow(0 0 6px #facc15)}
+.pct{position:absolute;inset:0;display:grid;place-items:center;font-size:46px;font-weight:800;color:#facc15}
+@media (max-width:800px){.upg{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -154,7 +176,7 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Мой профиль"></span><button id="out" title="Выйти">⏻</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="cas" title="Казино и апгрейдер">🎰</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Мой профиль"></span><button id="out" title="Выйти">⏻</button></div>
   <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
@@ -184,7 +206,7 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 import firebaseConfig from './firebase-config.js';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -339,7 +361,7 @@ function listen(){
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());renderMsgs()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
- onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0});
+ onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0;updBal()});
  onSnapshot(doc(db,'trolls',uid),s=>{if(!s.exists())return;const x=s.data();if(x.ts===lastTroll||Date.now()-x.ts>15000)return;lastTroll=x.ts;if(trollOn)runTroll(x)});
  let first=true;
  onSnapshot(collection(db,'gifts'),s=>{
@@ -350,7 +372,7 @@ function listen(){
 }
 function gotGift(g){
  const c=cat[g.type]||{};snd.recv();
- if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:g.fromUid==='shop'?'Покупка успешна!':'Тебе подарили NFT!',sub:(c.name||'NFT')+' №'+g.n+(g.fromUid==='shop'?'':' · от '+(g.fromName||'?'))});
+ if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:g.fromUid==='shop'?'Покупка успешна!':g.fromUid==='upgrade'?'Апгрейд удался! 🔥':'Тебе подарили NFT!',sub:(c.name||'NFT')+' №'+g.n+(g.fromUid==='shop'||g.fromUid==='upgrade'?'':' · от '+(g.fromName||'?'))});
  else toast('🎁 Тебе подарили: '+(c.name||'подарок')+' от '+(g.fromName||'?'))}
 function confetti(p,n,em){for(let i=0;i<n;i++){const s=el('span','cf',em?em[i%em.length]:'');
  if(!em){s.style.background=`hsl(${Math.random()*360},90%,60%)`;s.style.width='10px';s.style.height='16px'}
@@ -399,7 +421,7 @@ function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',
  c.append(el('div','sub','Коски выдаёт админ. Настоящих денег в Egor нет.'))})}
 const mod=$('#mod'),card=mod.firstElementChild;
 mod.onclick=e=>{if(e.target===mod)mod.style.display='none'};
-function openMod(title,fill){card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
+function openMod(title,fill,wide){card.classList.toggle('wide',!!wide);card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
 const sec=(c,t)=>c.append(el('div','sec',t));
 function toast(t){const d=el('div','toast',t);document.body.append(d);setTimeout(()=>d.remove(),3500)}
 function giftEl(g,onclick,sub){
@@ -456,6 +478,10 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
  seed.onclick=async()=>{const S=[['Мишка','🧸',0,1,0],['Роза','🌹',0,1,0],['Торт','🎂',0,1,0],['Ракета','🚀',1,1,0],['Алмаз','💎',2,1,0],['Корона','👑',2,1,1],['Единорог','🦄',3,0,0,500,10],['Дракон','🐉',3,0,0,1000,5]];
   for(const [name,emoji,rarity,free,pr,price=0,supply=0] of S)await setDoc(doc(db,'catalog','s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),{name,emoji,img:'',rarity,free:!!free,premium:!!pr,price,supply,ts:Date.now()});
   toast('Набор создан');openAdmin()};c.append(seed);
+ const tg=el('button','','🎁 Добавить подарки как в Телеге (32 шт.)');tg.style.margin='8px 0 0 8px';
+ tg.onclick=async()=>{const T=[['Плюшевая лягушка','🐸',3,25000,3],['Кепка основателя','🧢',3,18000,5],['Медальон-сердце','💝',3,12000,8],['Золотой персик','🍑',2,6000,15],['Астральный осколок','💠',3,15000,6],['Испуганный кот','🐱',2,5000,20],['Швейцарские часы','⌚',3,20000,5],['Кольцо-печатка','💍',2,7000,12],['Алмазное кольцо','💎',3,14000,7],['Вечная роза','🌹',2,4500,25],['Мешок добычи','🎒',1,1500,60],['Шлем Неко','🪖',2,3500,30],['Шампанское','🍾',1,800,100],['Новогодняя ёлка','🎄',1,600,150],['Тыква','🎃',1,500,150],['Сакура','🌸',1,900,100],['Золотой кубок','🏆',2,3000,40],['Салют','🎆',1,700,120],['Букет','💐',1,450,150],['Волшебный шар','🔮',2,2800,40],['Свеча','🕯️',0,150,300],['Сердечко','❤️',0,100,500],['Клевер','🍀',0,200,300],['Карамель','🍬',0,120,400],['Мишка-обнимашка','🧸',0,250,300],['Торт','🎂',0,300,250],['Ракета','🚀',1,1200,80],['Диско-шар','🪩',1,1000,100],['Подарочная коробка','🎁',0,80,500],['Снеговик','⛄',1,650,120],['Пончик','🍩',0,90,400],['Корона-NFT','👑',3,30000,2]];
+  for(let i=0;i<T.length;i++){const [name,emoji,rarity,price,supply]=T[i];await setDoc(doc(db,'catalog','tg'+i),{name,emoji,img:'',rarity,free:false,premium:false,price,supply,ts:Date.now()})}
+  toast('Добавлено: '+T.length);openAdmin()};c.append(tg);
  sec(c,'Выдать NFT-подарок (с номером)');const m=el('div','form'),opts=Object.entries(cat).map(([id,x])=>`<option value="${id}">${x.emoji||'🖼️'} ${x.name.replace(/[<&]/g,'')}</option>`).join('');
  m.innerHTML='<select class="mt">'+opts+'</select><input class="mu" placeholder="Юзернейм получателя"><button class="p mb">Выдать</button>';c.append(m);
  q(m,'.mb').onclick=async()=>{const t=q(m,'.mt').value,u=q(m,'.mu').value.trim().replace(/^@/,'').toLowerCase(),o=await uidOf(u);
@@ -542,6 +568,100 @@ function openProfile(id){
    const gb=el('button','p','🎁 Подарить');gb.style.marginTop='12px';gb.onclick=()=>{mod.style.display='none';openChat(id);setTimeout(openGifts,60)};c.append(gb)}
  })}
 $('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>cur&&openProfile(cur);
+
+
+/* ---- казино и апгрейдер (только виртуальные коски) ---- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const updBal=()=>{const e=document.getElementById('cbal');if(e)e.textContent=bal};
+async function freshBal(){const w=await getDoc(doc(db,'wallets',uid));bal=w.exists()?(w.data().coins||0):0;updBal();return bal}
+async function bet(o,extra){
+ const id=doc(collection(db,'bets')).id,b=writeBatch(db);
+ b.set(doc(db,'bets',id),{uid,claimed:false,t:serverTimestamp(),coinsIn:0,inGift:'',outType:'',target:0,mult100:0,payout:0,...o});
+ if(o.debit>0)b.update(doc(db,'wallets',uid),{coins:bal-o.debit,bet:id});
+ if(extra)extra(b,id);await b.commit();
+ const s=await getDoc(doc(db,'bets',id)),roll=s.data().t.toMillis()%100;return{id,roll,win:roll<o.chance}}
+async function claim(id,payout){for(let i=0;i<3;i++){try{await freshBal();const b=writeBatch(db);b.update(doc(db,'bets',id),{claimed:true});
+ b.update(doc(db,'wallets',uid),{coins:bal+payout,claim:id});await b.commit();return true}catch(e){await sleep(700)}}return false}
+async function playCoins(stake,chance,mult100){
+ stake=Math.floor(+stake);if(!(stake>=1&&stake<=5000))throw 'Ставка от 1 до 5000 косок';
+ await freshBal();if(stake>bal)throw 'Не хватает косок';
+ const payout=Math.floor(stake*mult100/100),r=await bet({kind:'coins',stake,chance,mult100,payout,debit:stake});return{...r,payout}}
+async function finish(r,res){
+ if(r.win){const ok=await claim(r.id,r.payout);res.textContent=ok?'🎉 Выигрыш +'+r.payout+' косок! (выпало '+r.roll+')':'Выигрыш есть, но зачислить не удалось — напиши админу';res.className='gres win';snd.win(1);
+  if(ok&&r.payout>=1000)celebrate({emoji:'💰',title:'Крупный выигрыш!',sub:'+'+r.payout+' косок',rarity:2})}
+ else{res.textContent='😢 Не повезло (выпало '+r.roll+')';res.className='gres lose';tone(300,0,.35,.15)}
+ await freshBal()}
+const errT=e=>toast(typeof e==='string'?e:'Не удалось сделать ставку (проверь правила Firebase)');
+function stakeInput(p){const r=el('div','row'),i=document.createElement('input');i.type='number';i.min=1;i.max=5000;i.value=100;r.append(el('span','','Ставка:'),i);
+ [['100',100],['500',500],['1000',1000],['MAX',5000]].forEach(([t,v])=>{const b=el('button','',t);b.onclick=()=>{i.value=t==='MAX'?Math.max(1,Math.min(5000,bal)):v;i.dispatchEvent(new Event('input'))};r.append(b)});p.append(r);return i}
+function gCoin(p){
+ let side=0;const st=stakeInput(p),coin=el('div','coin','🪙'),res=el('div','gres'),sides=el('div','row'),go=el('button','p','Бросить (x2 · шанс 47%)');
+ ['🦅 Орёл','👑 Решка'].forEach((t,i)=>{const b=el('button',i?'':'p',t);b.onclick=()=>{side=i;[...sides.children].forEach((x,j)=>x.className=j===i?'p':'')};sides.append(b)});
+ go.onclick=async()=>{go.disabled=true;res.textContent='';coin.textContent='🪙';
+  try{const r=await playCoins(st.value,47,200);coin.classList.remove('spin');void coin.offsetWidth;coin.classList.add('spin');await sleep(1300);
+   coin.textContent=(r.win?side:1-side)?'👑':'🦅';await finish(r,res)}catch(e){errT(e)}go.disabled=false};
+ p.append(sides,coin,go,res)}
+function gDice(p){
+ const st=stakeInput(p),sl=document.createElement('input');sl.type='range';sl.min=2;sl.max=95;sl.value=50;
+ const info=el('div','sub'),bar=el('div','dbar'),zone=el('div','dzone'),mk=el('div','dmk'),num=el('div','dnum','—'),res=el('div','gres'),go=el('button','p','Бросить кости');
+ const m=()=>Math.floor(9500/+sl.value),upd=()=>{zone.style.width=sl.value+'%';info.textContent='Шанс '+sl.value+'% · x'+(m()/100).toFixed(2)+' · выигрыш '+Math.floor((+st.value||0)*m()/100)+' (выпадет число меньше '+sl.value+')'};
+ sl.oninput=upd;st.oninput=upd;upd();
+ go.onclick=async()=>{go.disabled=true;res.textContent='';
+  try{const r=await playCoins(st.value,+sl.value,m());
+   for(let i=0;i<12;i++){const v=Math.floor(Math.random()*100);num.textContent=v;mk.style.left=v+'%';await sleep(70)}
+   num.textContent=r.roll;mk.style.left=r.roll+'%';await sleep(300);await finish(r,res)}catch(e){errT(e)}go.disabled=false};
+ bar.append(zone,mk);p.append(info,sl,bar,num,go,res)}
+function gSlots(p){
+ let mode=0;const M=[[30,300,'Лёгкий x3 · шанс 30%'],[9,1000,'JACKPOT x10 · шанс 9%']],S=['🍒','🍋','🔔','💎','7️⃣','⭐'];
+ const st=stakeInput(p),mr=el('div','row'),rl=el('div','reels'),R=[0,1,2].map(()=>el('div','reel','🎰')),res=el('div','gres'),go=el('button','p','Крутить');
+ M.forEach((x,i)=>{const b=el('button',i?'':'p',x[2]);b.onclick=()=>{mode=i;[...mr.children].forEach((y,j)=>y.className=j===i?'p':'')};mr.append(b)});
+ R.forEach(x=>rl.append(x));
+ go.onclick=async()=>{go.disabled=true;res.textContent='';
+  try{const r=await playCoins(st.value,M[mode][0],M[mode][1]),a=Math.floor(Math.random()*S.length);
+   const fin=r.win?[a,a,a]:[a,(a+1+Math.floor(Math.random()*(S.length-1)))%S.length,Math.floor(Math.random()*S.length)];
+   const t=setInterval(()=>R.forEach(x=>{if(!x.dataset.d)x.textContent=S[Math.floor(Math.random()*S.length)]}),80);
+   for(let i=0;i<3;i++){await sleep(700);R[i].textContent=S[fin[i]];R[i].dataset.d=1}
+   clearInterval(t);R.forEach(x=>delete x.dataset.d);await finish(r,res)}catch(e){errT(e)}go.disabled=false};
+ p.append(mr,rl,go,res)}
+function gUpg(p){
+ let sg=null,tid=null;const price=t=>(cat[t]||{}).price||0;
+ const w=el('div','upg'),L=el('div','upp'),C=el('div','upc'),Rt=el('div','upp'),lg=el('div','grid'),rg=el('div','grid'),ci=document.createElement('input');
+ ci.type='number';ci.min=0;ci.value=0;ci.placeholder='+ коски к ставке';
+ const wheel=el('div','wheel');
+ wheel.innerHTML='<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="#2a2a30" stroke-width="16"/><circle class="arc" cx="100" cy="100" r="80" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="0 503" transform="rotate(-90 100 100)"/></svg><div class="aw"><div class="ar"></div></div><div class="pct">0%</div>';
+ const arc=wheel.querySelector('.arc'),aw=wheel.querySelector('.aw'),pct=wheel.querySelector('.pct'),info=el('div','sub'),go=el('button','p','⬆ Улучшить'),res=el('div','gres');
+ const calc=()=>{const coins=Math.max(0,Math.floor(+ci.value||0)),stake=(sg?price(sg.type):0)+coins,tp=tid?price(tid):0;return{coins,stake,tp,ch:stake>0&&tp>stake?Math.min(95,Math.floor(95*stake/tp)):0}};
+ const upd=()=>{const {stake,tp,ch}=calc();arc.setAttribute('stroke-dasharray',(503*ch/100)+' 503');pct.textContent=ch+'%';
+  info.textContent=!sg?'Выбери свой подарок слева':!tid?'Выбери цель справа':ch<1?'Цель слишком дорогая для такой ставки (шанс меньше 1%)':'Ставка '+stake+' → цель '+tp+' · шанс '+ch+'%';
+  go.disabled=!(sg&&tid&&ch>=1);[...lg.children].forEach(x=>x.classList.toggle('sel',x._g===sg));[...rg.children].forEach(x=>x.classList.toggle('sel',x._t===tid))};
+ L.append(el('b','','Твои подарки'),el('div','sub','Выбери один подарок, можно добавить коски'),lg,ci);
+ myGifts.forEach(g=>{const e=giftEl(g,()=>{sg=g;upd()},'🪙 '+price(g.type)+(g.n?' · №'+g.n:''));e._g=g;lg.append(e)});
+ if(!myGifts.length)lg.append(el('div','sub','У тебя нет подарков. Купи в 🛍️ магазине.'));
+ Rt.append(el('b','','Цель апгрейда'),el('div','sub','Выбери NFT, который хочешь получить'),rg);
+ Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).forEach(([id,x])=>{
+  const left=x.supply?x.supply-(maxN[id]||0):1,e=giftEl({type:id},()=>{if(left<=0)return toast('Распродано');tid=id;upd()},'🪙 '+x.price+(x.supply?' · осталось '+Math.max(0,left):''));
+  e._t=id;if(left<=0)e.style.opacity=.4;rg.append(e)});
+ if(!rg.children.length)rg.append(el('div','sub','Админ ещё не выставил NFT'));
+ ci.oninput=upd;
+ go.onclick=async()=>{go.disabled=true;res.textContent='';
+  try{await freshBal();const {coins,stake,tp,ch}=calc();if(coins>bal)throw 'Не хватает косок';
+   const r=await bet({kind:'upgrade',stake,target:tp,chance:ch,coinsIn:coins,debit:coins,inGift:sg.id,outType:tid},(b,id)=>b.update(doc(db,'gifts',sg.id),{owner:'house',lastBet:id}));
+   aw.style.transition='none';aw.style.transform='rotate(0deg)';void aw.offsetWidth;aw.style.transition='transform 4s cubic-bezier(.12,.7,.1,1)';aw.style.transform='rotate('+(2160+r.roll*3.6+1.8)+'deg)';
+   await sleep(4300);
+   if(r.win){let ok=false;for(let i=0;i<3&&!ok;i++){try{await setDoc(doc(db,'gifts','u'+r.id),{type:tid,owner:uid,ownerName:me,fromUid:'upgrade',fromName:'Апгрейд',n:(maxN[tid]||0)+1,ts:Date.now(),bet:r.id});ok=true}catch(e){await sleep(700)}}
+    res.textContent=ok?'🔥 Апгрейд удался!':'Выигрыш есть, но выдать подарок не удалось — напиши админу';res.className='gres win'}
+   else{res.textContent='💥 Не повезло — подарок сгорел (выпало '+r.roll+')';res.className='gres lose';tone(220,0,.5,.15)}
+   await sleep(1600);p.textContent='';gUpg(p);return}
+  catch(e){errT(e)}go.disabled=false;upd()};
+ C.append(wheel,info,go,res);w.append(L,C,Rt);p.append(w);upd()}
+function openCasino(tab){
+ openMod('🎰 Казино и апгрейдер',c=>{
+  const top=el('div','cbalrow');top.innerHTML='🪙 <b id="cbal">'+bal+'</b> косок · <span class="sub">Только виртуальные коски, настоящих денег нет. Играй ради фана.</span>';c.append(top);
+  const tabs=el('div','tabs'),body=el('div','cbody'),G=[gCoin,gDice,gSlots,gUpg];
+  ['🪙 Монетка','🎲 Дайс','🎰 Слоты','⬆️ Апгрейдер'].forEach((n,i)=>{const b=el('button',i===tab?'on':'',n);
+   b.onclick=()=>{[...tabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');body.textContent='';G[i](body)};tabs.append(b)});
+  c.append(tabs,body);G[tab](body)},true)}
+$('#cas').onclick=()=>openCasino(0);
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];

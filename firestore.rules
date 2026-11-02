@@ -54,13 +54,39 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.buying == gid
         && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins
            == get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins
-              - get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.price);
+              - get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.price) || (
+        // получение подарка после удачного апгрейда
+        request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.fromUid == 'upgrade'
+        && request.resource.data.bet is string
+        && gid == 'u' + request.resource.data.bet
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.kind == 'upgrade'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.outType == request.resource.data.type
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.t.toMillis() % 100) < get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.chance
+        && get(/databases/$(database)/documents/gifts/$(get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.inGift)).data.owner == 'house'
+        && get(/databases/$(database)/documents/gifts/$(get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.inGift)).data.lastBet == request.resource.data.bet
+        && request.resource.data.n >= 1
+        && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply == 0
+            || request.resource.data.n <= get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply));
       allow update: if isAdmin() || (
         request.auth != null
         && resource.data.owner == request.auth.uid
         && request.resource.data.owner != request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['owner', 'ownerName', 'fromUid', 'fromName'])
-        && friends(request.auth.uid, request.resource.data.owner));
+        && friends(request.auth.uid, request.resource.data.owner)) || (
+        // сжигание подарка при апгрейде
+        request.auth != null
+        && resource.data.owner == request.auth.uid
+        && request.resource.data.owner == 'house'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['owner', 'lastBet'])
+        && request.resource.data.lastBet is string
+        && !exists(/databases/$(database)/documents/bets/$(request.resource.data.lastBet))
+        && existsAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet))
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.kind == 'upgrade'
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.inGift == gid);
       allow delete: if isAdmin();
     }
 
@@ -78,6 +104,29 @@ service cloud.firestore {
         && request.resource.data.coins >= 0
         && request.resource.data.coins == resource.data.coins
            - get(/databases/$(database)/documents/catalog/$(getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.buying)).data.type)).data.price;
+
+      // списание ставки (ставка создаётся в той же записи)
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'bet'])
+        && request.resource.data.bet is string
+        && !exists(/databases/$(database)/documents/bets/$(request.resource.data.bet))
+        && existsAfter(/databases/$(database)/documents/bets/$(request.resource.data.bet))
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.debit > 0
+        && request.resource.data.coins >= 0
+        && request.resource.data.coins == resource.data.coins - getAfter(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.debit;
+
+      // зачисление выигрыша (исход считается по серверному времени ставки)
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'claim'])
+        && request.resource.data.claim is string
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.kind == 'coins'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == false
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == true
+        && resource.data.bet == request.resource.data.claim
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 100) < get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.chance
+        && request.resource.data.coins == resource.data.coins + get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.payout;
     }
 
     // приколы: пишет только админ, читает только адресат
@@ -97,6 +146,37 @@ service cloud.firestore {
         && (!('name' in request.resource.data) || request.resource.data.name.size() <= 24)
         && (!('bio' in request.resource.data) || request.resource.data.bio.size() <= 300)
         && (isPremium() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'nstyle', 'frame', 'banner', 'wall']));
+    }
+
+    // ставки казино и апгрейдера: исход = миллисекунды серверного времени записи
+    match /bets/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.t == request.time
+        && request.resource.data.claimed == false
+        && request.resource.data.chance >= 1 && request.resource.data.chance <= 95
+        && request.resource.data.stake >= 1
+        && (
+          (request.resource.data.kind == 'coins'
+            && request.resource.data.stake <= 5000
+            && request.resource.data.debit == request.resource.data.stake
+            && request.resource.data.mult100 * request.resource.data.chance <= 9500
+            && request.resource.data.payout * 100 <= request.resource.data.stake * request.resource.data.mult100)
+          ||
+          (request.resource.data.kind == 'upgrade'
+            && request.resource.data.payout == 0
+            && request.resource.data.coinsIn >= 0
+            && request.resource.data.debit == request.resource.data.coinsIn
+            && get(/databases/$(database)/documents/gifts/$(request.resource.data.inGift)).data.owner == request.auth.uid
+            && request.resource.data.stake == get(/databases/$(database)/documents/catalog/$(get(/databases/$(database)/documents/gifts/$(request.resource.data.inGift)).data.type)).data.price + request.resource.data.coinsIn
+            && request.resource.data.target == get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.price
+            && get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.free == false
+            && request.resource.data.chance * request.resource.data.target <= 95 * request.resource.data.stake)
+        );
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid
+        && resource.data.claimed == false && request.resource.data.claimed == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed']);
     }
 
     match /usernames/{name} {
