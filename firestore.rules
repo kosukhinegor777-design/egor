@@ -40,7 +40,21 @@ service cloud.firestore {
         && request.resource.data.n == 0
         && get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.free == true
         && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.premium == false || isPremium())
-        && friends(request.auth.uid, request.resource.data.owner));
+        && friends(request.auth.uid, request.resource.data.owner)) || (
+        // покупка NFT в магазине: одновременно списываются коски
+        request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.fromUid == 'shop'
+        && request.resource.data.n >= 1
+        && get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.free == false
+        && get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.price > 0
+        && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply == 0
+            || request.resource.data.n <= get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply)
+        && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.premium == false || isPremium())
+        && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.buying == gid
+        && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins
+           == get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins
+              - get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.price);
       allow update: if isAdmin() || (
         request.auth != null
         && resource.data.owner == request.auth.uid
@@ -48,6 +62,28 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['owner', 'ownerName', 'fromUid', 'fromName'])
         && friends(request.auth.uid, request.resource.data.owner));
       allow delete: if isAdmin();
+    }
+
+    // кошельки: коски выдаёт админ, тратить можно только на покупку NFT
+    match /wallets/{id} {
+      allow read: if request.auth != null && (request.auth.uid == id || isAdmin());
+      allow write: if isAdmin();
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'buying'])
+        && request.resource.data.buying is string
+        && !exists(/databases/$(database)/documents/gifts/$(request.resource.data.buying))
+        && existsAfter(/databases/$(database)/documents/gifts/$(request.resource.data.buying))
+        && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.buying)).data.owner == request.auth.uid
+        && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.buying)).data.fromUid == 'shop'
+        && request.resource.data.coins >= 0
+        && request.resource.data.coins == resource.data.coins
+           - get(/databases/$(database)/documents/catalog/$(getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.buying)).data.type)).data.price;
+    }
+
+    // приколы: пишет только админ, читает только адресат
+    match /trolls/{id} {
+      allow read: if request.auth != null && request.auth.uid == id;
+      allow write: if isAdmin();
     }
 
     match /usernames/{name} {

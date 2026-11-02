@@ -79,6 +79,26 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 .form label{display:flex;gap:8px;align-items:center}.form label input{width:auto}
 .row{display:flex;gap:8px;align-items:center;margin:4px 0}.row span{flex:1}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:14px;z-index:20;animation:pop .3s;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+
+.cel{position:fixed;inset:0;z-index:30;background:radial-gradient(circle,rgba(0,0,0,.5),rgba(0,0,0,.88));display:grid;place-items:center;animation:fade .3s;overflow:hidden;cursor:pointer}
+.cbox{background:var(--panel);color:var(--text);border-radius:26px;padding:30px 44px;text-align:center;animation:boom .8s cubic-bezier(.2,1.4,.4,1);box-shadow:0 0 70px #8b4be8aa;max-width:90vw}
+.cbox.r3{box-shadow:0 0 100px #f59e0b}.cbox h2{margin:8px 0 4px}
+.cbox .e{font-size:100px;animation:spin 1.2s ease-out,floaty 2s ease-in-out 1s infinite}
+.cbox img{width:130px;height:130px;border-radius:22px;object-fit:cover;animation:spin 1.2s ease-out,floaty 2s ease-in-out 1s infinite}
+@keyframes boom{0%{transform:scale(0) rotate(-20deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes spin{from{transform:rotateY(720deg) scale(.2)}to{transform:none}}
+@keyframes floaty{50%{transform:translateY(-12px)}}
+.cf{position:absolute;top:-40px;font-size:26px;border-radius:2px;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+body{transition:transform .8s,filter .5s}
+html.tr-flip body{transform:rotate(180deg)}
+html.tr-shake body{animation:shake .4s infinite}
+@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-8px,4px) rotate(-.6deg)}50%{transform:translate(8px,-4px) rotate(.6deg)}75%{transform:translate(-6px,-3px)}}
+html.tr-rainbow body{animation:hue 1.5s linear infinite}@keyframes hue{to{filter:hue-rotate(360deg)}}
+html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:blur(5px)}
+.tover{position:fixed;inset:0;z-index:40;display:grid;place-items:center;text-align:center;color:#fff;background:rgba(10,10,25,.94);font-size:26px;animation:fade .3s;padding:20px}
+.tover small{position:absolute;bottom:20px;opacity:.7;font-size:13px}
+.tover.siren{animation:siren .5s infinite alternate}@keyframes siren{from{background:rgba(200,0,0,.92)}to{background:rgba(0,40,200,.92)}}
 </style>
 </head>
 <body>
@@ -93,7 +113,7 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="mine" title="Мои подарки">🎒</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Сменить аватарку"></span><button id="out" title="Выйти">⏻</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Сменить аватарку"></span><button id="out" title="Выйти">⏻</button></div>
   <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
@@ -114,7 +134,7 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 import firebaseConfig from './firebase-config.js';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -137,6 +157,7 @@ function tone(f,t0,d,v=.15){if(muted)return;try{const c=ctx(),o=c.createOscillat
  const s=c.currentTime+t0;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.01);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.start(s);o.stop(s+d+.05)}catch(e){}}
 const snd={send:()=>{tone(660,0,.12,.1);tone(880,.07,.14,.1)},recv:()=>{tone(880,0,.15,.15);tone(1175,.1,.28,.15)},
  ring:()=>{[0,.4].forEach(x=>{tone(740,x,.25,.22);tone(988,x+.12,.25,.22)})},back:()=>tone(440,0,.9,.08),end:()=>{tone(500,0,.15,.12);tone(330,.15,.3,.12)}};
+snd.win=r=>{[523,659,784,1047,...(r>=3?[1319,1568]:[])].forEach((f,i)=>tone(f,i*.11,.35,.16))};
 let ringT=null;const startRing=f=>{stopRing();f();ringT=setInterval(f,f===snd.ring?2200:3000)},stopRing=()=>{clearInterval(ringT);ringT=null};
 const setMute=()=>{$('#mute').textContent=muted?'🔕':'🔔'};setMute();
 $('#mute').onclick=()=>{muted=!muted;try{localStorage.setItem('egor_mute',muted?'1':'0')}catch(e){}setMute()};
@@ -257,16 +278,72 @@ $('#addb').onclick=addFriend;$('#addu').onkeydown=e=>{if(e.key==='Enter')addFrie
 
 /* ---- Косухость+, подарки, админка ---- */
 let isAdm=false;
+let bal=0,maxN={},allG={},firstPrem=true,prevPrem=0,lastTroll=0,trollOn=true;
+try{trollOn=localStorage.getItem('egor_troll')!=='0'}catch(e){}
 function listen(){
  onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();$('#adm').style.display=isAdm?'':'none'});
- onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);renderMe();renderList();head();renderMsgs()});
+ onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
+  const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
+  prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());renderMsgs()});
+ onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0});
+ onSnapshot(doc(db,'trolls',uid),s=>{if(!s.exists())return;const x=s.data();if(x.ts===lastTroll||Date.now()-x.ts>15000)return;lastTroll=x.ts;if(trollOn)runTroll(x)});
  let first=true;
- onSnapshot(query(collection(db,'gifts'),where('owner','==',uid)),s=>{
-  myGifts=s.docs.map(d=>({...d.data(),id:d.id}));
-  if(!first)s.docChanges().forEach(ch=>{if(ch.type==='added'){const g=ch.doc.data();snd.recv();toast('🎁 Тебе подарили: '+((cat[g.type]||{}).name||'подарок')+(g.n?' №'+g.n:'')+' от '+(g.fromName||'?'))}});
-  first=false});
+ onSnapshot(collection(db,'gifts'),s=>{
+  s.docChanges().forEach(ch=>{const g=ch.doc.data(),id=ch.doc.id,was=allG[id]&&allG[id].owner;
+   if(ch.type==='removed')delete allG[id];else{allG[id]=g;maxN[g.type]=Math.max(maxN[g.type]||0,g.n||0)}
+   if(!first&&ch.type!=='removed'&&g.owner===uid&&was!==uid)gotGift(g)});
+  myGifts=Object.entries(allG).filter(([,g])=>g.owner===uid).map(([id,g])=>({...g,id}));first=false});
 }
+function gotGift(g){
+ const c=cat[g.type]||{};snd.recv();
+ if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:g.fromUid==='shop'?'Покупка успешна!':'Тебе подарили NFT!',sub:(c.name||'NFT')+' №'+g.n+(g.fromUid==='shop'?'':' · от '+(g.fromName||'?'))});
+ else toast('🎁 Тебе подарили: '+(c.name||'подарок')+' от '+(g.fromName||'?'))}
+function confetti(p,n,em){for(let i=0;i<n;i++){const s=el('span','cf',em?em[i%em.length]:'');
+ if(!em){s.style.background=`hsl(${Math.random()*360},90%,60%)`;s.style.width='10px';s.style.height='16px'}
+ s.style.left=Math.random()*100+'%';s.style.animationDuration=(2+Math.random()*2.5)+'s';s.style.animationDelay=Math.random()*.8+'s';p.append(s)}}
+function celebrate(o){
+ const w=el('div','cel'),b=el('div','cbox r'+(o.rarity||0));
+ if(o.img){const i=el('img');i.src=o.img;b.append(i)}else b.append(el('div','e',o.emoji||'🎁'));
+ b.append(el('h2','',o.title),el('div','sub',o.sub||''));w.append(b);document.body.append(w);
+ confetti(w,[40,50,70,100][o.rarity||0],o.stars?['⭐','✨','🌟']:null);snd.win(o.rarity||0);
+ const k=()=>w.remove();w.onclick=k;setTimeout(k,5500)}
+let trollStop=[];
+function runTroll(x){
+ const R=document.documentElement,sec=Math.min(30,Math.max(3,+x.sec||10)),T=['tr-flip','tr-shake','tr-rainbow','tr-big','tr-small','tr-blur'];
+ const clear=()=>{T.forEach(t=>R.classList.remove(t));trollStop.forEach(f=>f());trollStop=[]};
+ const cls=t=>{R.classList.add('tr-'+t);setTimeout(()=>R.classList.remove('tr-'+t),sec*1000)};
+ const over=(html,cn)=>{const d=el('div','tover '+(cn||''));d.innerHTML=html;const s=el('small','','😈 Это прикол от админа Egor');d.append(s);document.body.append(d);trollStop.push(()=>d.remove());return d};
+ const esc=t=>String(t||'').replace(/[<>&]/g,'');
+ if(x.type==='stop')return clear();
+ if(['flip','shake','rainbow','big','small','blur'].includes(x.type))return cls(x.type);
+ if(x.type==='rain'){const w=el('div','cel');w.style.background='transparent';w.style.pointerEvents='none';document.body.append(w);
+  const em=[...(x.text||'🐸')].filter(c=>c.trim()).slice(0,6);confetti(w,Math.min(120,sec*8),em.length?em:['🐸']);setTimeout(()=>w.remove(),(sec+4)*1000);trollStop.push(()=>w.remove())}
+ else if(x.type==='msg'){const d=over('<div><div style="font-size:60px">📢</div><b>Сообщение от админа</b><div style="margin:14px 0">'+esc(x.text||'Привет! 😈')+'</div></div>');
+  const b=el('button','p','Ок');b.onclick=()=>d.remove();d.firstChild.append(b)}
+ else if(x.type==='ban'){let n=Math.min(sec,10);const d=over('<div><div style="font-size:70px">🚫</div><b>Вы забанены администратором</b><div id="bn" style="font-size:48px;margin-top:10px">'+n+'</div></div>');
+  const t=setInterval(()=>{n--;const e=d.querySelector('#bn');if(n>0&&e)e.textContent=n;else{clearInterval(t);d.firstChild.innerHTML='<div style="font-size:70px">😄</div><b>Шутка! Ты не забанен</b>';setTimeout(()=>d.remove(),2500)}},1000);trollStop.push(()=>clearInterval(t))}
+ else if(x.type==='siren'){const d=over('<div style="font-size:90px">🚨</div>','siren');let k=0;const t=setInterval(()=>{tone(k++%2?600:850,0,.4,.2)},450);
+  setTimeout(()=>{clearInterval(t);d.remove()},Math.min(sec,8)*1000);trollStop.push(()=>{clearInterval(t);d.remove()})}
+}
+async function buy(id){
+ const c=cat[id];if(!c)return;
+ if(c.premium&&!isPrem(uid))return toast('Нужна Косухость+ ⭐');
+ if(c.supply&&(maxN[id]||0)>=c.supply)return toast('Распродано 😢');
+ if(bal<c.price)return toast('Не хватает косок: нужно '+c.price+', у тебя '+bal);
+ if(!confirm('Купить «'+c.name+'» за '+c.price+' косок?'))return;
+ try{const gid=doc(collection(db,'gifts')).id,b=writeBatch(db);
+  b.set(doc(db,'gifts',gid),{type:id,owner:uid,ownerName:me,fromUid:'shop',fromName:'Магазин',n:(maxN[id]||0)+1,ts:Date.now()});
+  b.update(doc(db,'wallets',uid),{coins:bal-c.price,buying:gid});await b.commit();mod.style.display='none'}
+ catch(e){toast('Не удалось купить (возможно, кто-то успел раньше)')}}
+function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',c=>{
+ sec(c,'NFT-подарки в продаже');const g=el('div','grid');
+ Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
+  g.append(giftEl({type:id},()=>buy(id),'🪙 '+x.price+(left!=null?' · осталось '+left+'/'+x.supply:'')))});
+ if(!g.children.length)g.append(el('div','sub','Админ ещё не выставил NFT на продажу'));c.append(g);
+ sec(c,'Моя коллекция ('+myGifts.length+')');const m=el('div','grid');myGifts.forEach(x=>m.append(giftEl(x)));
+ if(!myGifts.length)m.append(el('div','sub','Пока пусто'));c.append(m);
+ c.append(el('div','sub','Коски выдаёт админ. Настоящих денег в Egor нет.'))})}
 const mod=$('#mod'),card=mod.firstElementChild;
 mod.onclick=e=>{if(e.target===mod)mod.style.display='none'};
 function openMod(title,fill){card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
@@ -284,7 +361,8 @@ async function sendFree(id,to){const c=cat[id];try{snd.send();
  await giftMsg(to,{t:id,n:0},'🎁 Подарок: '+c.name)}catch(e){toast('Не удалось отправить подарок')}}
 async function transfer(g,to){try{snd.send();
  await updateDoc(doc(db,'gifts',g.id),{owner:to,ownerName:friends.get(to).name,fromUid:uid,fromName:me});
- await giftMsg(to,{t:g.type,n:g.n},'🎁 Подарок: '+cat[g.type].name+(g.n?' №'+g.n:''))}catch(e){toast('Не удалось передать подарок')}}
+ await giftMsg(to,{t:g.type,n:g.n},'🎁 Подарок: '+cat[g.type].name+(g.n?' №'+g.n:''));
+ {const c=cat[g.type]||{};if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:'NFT отправлен!',sub:c.name+' №'+g.n+' → @'+friends.get(to).name});else toast('Подарок отправлен')}}catch(e){toast('Не удалось передать подарок')}}
 function openGifts(){
  if(!cur)return toast('Сначала выбери чат');const to=cur,fn=friends.get(to).name;
  openMod('🎁 Подарки для @'+fn,async c=>{
@@ -307,20 +385,22 @@ function openPlus(){openMod('⭐ Косухость+',c=>{
  if(on){sec(c,'Цвет твоих сообщений');const row=el('div','sw');
   ['#5b5bf0','#e5484d','#f59e0b','#10b981','#ec4899','#06b6d4','#111827'].forEach(col=>{const b=el('button','swb');b.style.background=col;
    b.onclick=async()=>{await setDoc(doc(db,'presence',uid),{col},{merge:true});toast('Цвет сохранён')};row.append(b)});c.append(row)}
- else c.append(el('div','sub','Оплаты в Egor пока нет: Косухость+ выдаёт администратор. Попроси его 😉'))})}
+ else c.append(el('div','sub','Оплаты в Egor пока нет: Косухость+ выдаёт администратор. Попроси его 😉'));
+ const tl=el('label','perk'),cb=document.createElement('input');cb.type='checkbox';cb.checked=trollOn;cb.style.cssText='width:auto;margin-right:8px';
+ cb.onchange=()=>{trollOn=cb.checked;try{localStorage.setItem('egor_troll',trollOn?'1':'0')}catch(e){}};tl.append(cb,'Принимать приколы от админа 😈');c.append(tl)})}
 const uidOf=async u=>{const d=await getDoc(doc(db,'usernames',u.trim().replace(/^@/,'').toLowerCase()));return d.exists()?d.data().uid:null};
 function openAdmin(){openMod('🛡️ Панель админа',c=>{
  const q=(p,s)=>p.querySelector(s);
  sec(c,'Создать подарок');const f=el('div','form');
- f.innerHTML='<input class="gn" placeholder="Название"><input class="ge" placeholder="Эмодзи (например 🦄)"><input class="gi" type="file" accept="image/*"><select class="gr"><option value="0">Обычный</option><option value="1">Редкий</option><option value="2">Эпик</option><option value="3">Легендарный</option></select><label><input class="gfr" type="checkbox"> Бесплатный (все могут отправлять)</label><label><input class="gpr" type="checkbox"> Только для Косухость+</label><button class="p gmk">Создать</button>';
+ f.innerHTML='<input class="gn" placeholder="Название"><input class="ge" placeholder="Эмодзи (например 🦄)"><input class="gi" type="file" accept="image/*"><select class="gr"><option value="0">Обычный</option><option value="1">Редкий</option><option value="2">Эпик</option><option value="3">Легендарный</option></select><input class="gpc" type="number" min="0" value="0" placeholder="Цена в косках (0 — не продаётся)"><input class="gsp" type="number" min="0" value="0" placeholder="Тираж (0 — без лимита)"><label><input class="gfr" type="checkbox"> Бесплатный (все могут отправлять)</label><label><input class="gpr" type="checkbox"> Только для Косухость+</label><button class="p gmk">Создать</button>';
  c.append(f);
  q(f,'.gmk').onclick=async()=>{const name=q(f,'.gn').value.trim(),emoji=q(f,'.ge').value.trim(),file=q(f,'.gi').files[0];
   if(!name||(!emoji&&!file))return toast('Нужны название и эмодзи или картинка');
-  await setDoc(doc(db,'catalog','c'+Date.now().toString(36)),{name,emoji,img:file?await shrink(file,160,.85,true):'',rarity:+q(f,'.gr').value,free:q(f,'.gfr').checked,premium:q(f,'.gpr').checked,ts:Date.now()});
+  await setDoc(doc(db,'catalog','c'+Date.now().toString(36)),{name,emoji,img:file?await shrink(file,160,.85,true):'',rarity:+q(f,'.gr').value,free:q(f,'.gfr').checked,premium:q(f,'.gpr').checked,price:q(f,'.gfr').checked?0:Math.max(0,+q(f,'.gpc').value||0),supply:Math.max(0,+q(f,'.gsp').value||0),ts:Date.now()});
   toast('Подарок создан');openAdmin()};
  const seed=el('button','','Создать стартовый набор');seed.style.marginTop='8px';
- seed.onclick=async()=>{const S=[['Мишка','🧸',0,1,0],['Роза','🌹',0,1,0],['Торт','🎂',0,1,0],['Ракета','🚀',1,1,0],['Алмаз','💎',2,1,0],['Корона','👑',2,1,1],['Единорог','🦄',3,0,0],['Дракон','🐉',3,0,0]];
-  for(const [name,emoji,rarity,free,pr] of S)await setDoc(doc(db,'catalog','s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),{name,emoji,img:'',rarity,free:!!free,premium:!!pr,ts:Date.now()});
+ seed.onclick=async()=>{const S=[['Мишка','🧸',0,1,0],['Роза','🌹',0,1,0],['Торт','🎂',0,1,0],['Ракета','🚀',1,1,0],['Алмаз','💎',2,1,0],['Корона','👑',2,1,1],['Единорог','🦄',3,0,0,500,10],['Дракон','🐉',3,0,0,1000,5]];
+  for(const [name,emoji,rarity,free,pr,price=0,supply=0] of S)await setDoc(doc(db,'catalog','s'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),{name,emoji,img:'',rarity,free:!!free,premium:!!pr,price,supply,ts:Date.now()});
   toast('Набор создан');openAdmin()};c.append(seed);
  sec(c,'Выдать NFT-подарок (с номером)');const m=el('div','form'),opts=Object.entries(cat).map(([id,x])=>`<option value="${id}">${x.emoji||'🖼️'} ${x.name.replace(/[<&]/g,'')}</option>`).join('');
  m.innerHTML='<select class="mt">'+opts+'</select><input class="mu" placeholder="Юзернейм получателя"><button class="p mb">Выдать</button>';c.append(m);
@@ -333,11 +413,23 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
  q(p,'.pg').onclick=async()=>{const o=await uidOf(q(p,'.pu').value);if(!o)return toast('Не найден');
   await setDoc(doc(db,'premium',o),{until:Math.max(Date.now(),prem[o]||0)+(+q(p,'.pd').value||30)*864e5});toast('Косухость+ выдана')};
  q(p,'.pr').onclick=async()=>{const o=await uidOf(q(p,'.pu').value);if(!o)return toast('Не найден');await deleteDoc(doc(db,'premium',o));toast('Забрана')};
+ sec(c,'🪙 Коски (валюта)');const w=el('div','form');
+ w.innerHTML='<input class="wu" placeholder="Юзернейм"><input class="wa" type="number" value="100" placeholder="Сколько (минус — забрать)"><button class="p wg">Выдать коски</button>';c.append(w);
+ q(w,'.wg').onclick=async()=>{const o=await uidOf(q(w,'.wu').value),a=Math.trunc(+q(w,'.wa').value);if(!o||!a)return toast('Проверь юзернейм и число');
+  await setDoc(doc(db,'wallets',o),{coins:increment(a)},{merge:true});toast('Готово: '+(a>0?'+':'')+a+' косок')};
+ sec(c,'😈 Приколы (безобидные, с пометкой «прикол от админа»)');const t=el('div','form');
+ t.innerHTML='<input class="tu" placeholder="Юзернейм (пусто = всем, кроме тебя)"><select class="tt"><option value="flip">🙃 Перевернуть экран</option><option value="shake">🫨 Тряска</option><option value="rainbow">🌈 Радужные цвета</option><option value="big">🔍 Огромный интерфейс</option><option value="small">🐜 Крошечный интерфейс</option><option value="blur">😵 Размытие</option><option value="rain">🐸 Дождь из эмодзи</option><option value="siren">🚨 Сирена</option><option value="ban">🚫 Фейковый бан (в конце «шутка»)</option><option value="msg">📢 Сообщение от админа</option><option value="stop">🛑 Остановить всё</option></select><input class="tx" placeholder="Текст (для сообщения) или эмодзи (для дождя)"><input class="ts" type="number" value="10" min="3" max="30" placeholder="Секунд (3–30)"><button class="p tg">Запустить 😈</button>';c.append(t);
+ q(t,'.tg').onclick=async()=>{const u=q(t,'.tu').value.trim();let ids;
+  if(u){const o=await uidOf(u);if(!o)return toast('Не найден');ids=[o]}
+  else{if(!confirm('Запустить у ВСЕХ пользователей?'))return;ids=(await getDocs(collection(db,'usernames'))).docs.map(d=>d.data().uid).filter(i=>i!==uid)}
+  const x={type:q(t,'.tt').value,text:q(t,'.tx').value.slice(0,200),sec:+q(t,'.ts').value||10,ts:Date.now(),by:me};
+  await Promise.all(ids.map(i=>setDoc(doc(db,'trolls',i),x)));toast('😈 Запущено ('+ids.length+')')};
  sec(c,'Каталог подарков');
- Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')));
+ Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
+  const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
   const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить «'+x.name+'» из каталога?')){await deleteDoc(doc(db,'catalog',id));openAdmin()}};r.append(b);c.append(r)});
 })}
-$('#plus').onclick=openPlus;$('#mine').onclick=openMine;$('#adm').onclick=openAdmin;$('#gf').onclick=openGifts;
+$('#plus').onclick=openPlus;$('#shop').onclick=openShop;$('#adm').onclick=openAdmin;$('#gf').onclick=openGifts;
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null;
