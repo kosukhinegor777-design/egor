@@ -51,9 +51,6 @@ input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,91,
 #bar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
 #bar button.ic{font-size:20px;padding:7px 11px}
 .empty{margin:auto;color:var(--muted);text-align:center;animation:fade .5s}
-#call{position:fixed;inset:0;background:rgba(10,10,25,.94);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;z-index:9;animation:fade .25s}
-#call video{max-width:92vw;max-height:60vh;border-radius:14px;background:#000}
-#lv{width:130px;position:absolute;right:16px;bottom:100px}
 #lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;place-items:center;z-index:10;cursor:zoom-out;animation:fade .2s}
 #lb img{max-width:94vw;max-height:94vh;border-radius:10px;animation:pop .25s}
 @media (max-width:700px){#side{width:100%;max-width:100%}#main{display:none}#app.chat #side{display:none}#app.chat #main{display:flex}#back{display:inline-block}.m{max-width:85%}}
@@ -116,6 +113,33 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 #emp{position:absolute;left:12px;bottom:70px;width:min(380px,92%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 10px 40px rgba(0,0,0,.35);display:none;z-index:6;animation:pop .2s}
 .egrid{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;max-height:200px;overflow:auto}
 .eo{font-size:28px;cursor:pointer;padding:3px 5px;border-radius:8px;transition:transform .12s}.eo:hover{transform:scale(1.3);background:var(--their)}.eo.lock{opacity:.45}
+
+.av.xl{width:200px;height:200px;font-size:80px}.av.lg{width:84px;height:84px;font-size:34px}
+#call{position:fixed;inset:0;background:#0e0e11;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:9;animation:fade .25s;transition:opacity .2s}
+#call.min{opacity:0;pointer-events:none}
+#ccenter{display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2}
+#cname{font-size:30px}#cs{opacity:.8;font-size:15px;margin-bottom:26px}
+#cav{position:relative}#cav::before{content:"";position:absolute;inset:-150px;background:radial-gradient(circle,rgba(34,197,94,.4),transparent 62%);opacity:.2;transition:opacity .3s;pointer-events:none}
+#cav.speak::before{opacity:1}#cav.speak .av{box-shadow:0 0 0 6px rgba(34,197,94,.65)}
+#rvw{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
+#call.rvid #rvw{opacity:1}#rv{width:100%;height:100%;object-fit:contain}
+#call.rvid #ccenter{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(0,0,0,.45);padding:6px 16px;border-radius:20px}
+#call.rvid #cav{display:none}#call.rvid #cname{font-size:16px}#call.rvid #cs{margin:0;font-size:12px}
+#self{position:absolute;top:70px;right:16px;width:250px;height:185px;border-radius:16px;background:linear-gradient(160deg,#2a2a30,#17171b);border:3px solid transparent;overflow:hidden;display:grid;place-items:center;z-index:4;transition:border-color .2s}
+#self.speak{border-color:#22c55e}#self video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.slab{position:absolute;left:10px;bottom:8px;font-weight:700;font-size:13px;display:flex;gap:6px;align-items:center;z-index:2;text-shadow:0 1px 4px #000}
+.bars b{width:3px;height:10px;background:#22c55e;border-radius:2px;display:inline-block;margin-left:2px}
+#self.speak .bars b{animation:eq .45s infinite alternate}.bars b:nth-child(2){animation-delay:.15s!important}.bars b:nth-child(3){animation-delay:.3s!important}
+@keyframes eq{to{height:3px}}
+.cb{width:56px;height:56px;border-radius:50%;font-size:22px;padding:0;background:#2b2d36;color:#fff;display:grid;place-items:center}
+.cb.on{background:#fff;color:#111}.cb.off,.cb.red{background:#e5484d}.cb.green{background:#22c55e}.hang span{display:inline-block;transform:rotate(135deg)}
+#cbar{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:12px;background:rgba(255,255,255,.08);padding:8px;border-radius:40px;z-index:5;backdrop-filter:blur(8px)}
+#cin{position:absolute;bottom:40px;display:flex;gap:46px;z-index:5}
+#cfs{position:absolute;top:16px;right:16px;z-index:5;width:44px;height:44px;font-size:18px}
+#cmin{position:absolute;right:16px;bottom:22px;z-index:5;width:48px;height:48px}
+#call.incoming #cbar,#call.incoming #self,#call.incoming #cmin{display:none}#call:not(.incoming) #cin{display:none}
+#cpill{display:none;position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:11;background:#22c55e;color:#fff;padding:8px 18px;border-radius:24px;cursor:pointer;gap:8px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.4);animation:pop .3s}
+@media (max-width:700px){#self{width:120px;height:90px;top:64px}.av.xl{width:150px;height:150px;font-size:60px}#cbar{gap:8px}.cb{width:50px;height:50px}}
 </style>
 </head>
 <body>
@@ -145,8 +169,16 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
 <div id="lb"><img alt=""></div>
 <div id="mod"><div class="card"></div></div>
-<div id="call"><div id="cav"></div><div id="cs" style="font-size:20px"></div><video id="rv" autoplay playsinline></video><video id="lv" autoplay playsinline muted></video>
- <div><button class="p" id="acc" style="display:none">Принять</button> <button id="end" style="background:#e5484d;color:#fff">Завершить</button></div></div>
+<div id="call">
+ <div id="rvw"><video id="rv" autoplay playsinline></video></div>
+ <div id="ccenter"><div id="cname" class="nm"></div><div id="cs"></div><div id="cav"></div></div>
+ <button class="cb" id="cfs" title="На весь экран">⛶</button>
+ <div id="self"><video id="lv" autoplay playsinline muted></video><div id="sav"></div><div class="slab">Вы <i class="bars"><b></b><b></b><b></b></i></div></div>
+ <div id="cbar"><button class="cb" id="cmic" title="Микрофон">🎤</button><button class="cb" id="ccam" title="Камера">📹</button><button class="cb" id="cscr" title="Демонстрация экрана">🖥️</button><button class="cb red hang" id="end" title="Завершить"><span>📞</span></button></div>
+ <div id="cin"><button class="cb green" id="acc" title="Принять">📞</button><button class="cb red hang" id="dec" title="Отклонить"><span>📞</span></button></div>
+ <button class="cb" id="cmin" title="Свернуть к чату">💬</button>
+</div>
+<div id="cpill">📞 <b id="ptimer">00:00</b> · вернуться к звонку</div>
 
 <script type="module">
 import firebaseConfig from './firebase-config.js';
@@ -165,7 +197,8 @@ let prem={},cat={},cols={},myGifts=[],profs={};
 const isPrem=id=>(prem[id]||0)>Date.now();
 const isOn=f=>seen[f]&&Date.now()-seen[f]<50000;
 const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.sticker?'Стикер '+x.sticker:x.img&&!x.text?'📷 Фото':x.text):'';
-const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem','fr-'+((profs[id]&&profs[id].frame)||'gold'));return d};
+const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem','fr-'+((profs[id]&&profs[id].frame)||'gold'));
+ if(!cls.split(' ').includes('nc')){d.style.cursor='pointer';d.onclick=e=>{e.stopPropagation();openProfile(id)}}return d};
 
 /* ---- звуки (генерируются в браузере) ---- */
 let ac,muted=false;try{muted=localStorage.getItem('egor_mute')==='1'}catch(e){}
@@ -475,7 +508,7 @@ function openProfile(id){
  const mine=id===uid,P=profs[id]||{},base=mine?me:((friends.get(id)||{}).name||'?'),prm=isPrem(id);
  openMod(mine?'👤 Мой профиль':'👤 Профиль',c=>{
   const ban=el('div','pban');ban.style.background=BANNERS[prm&&P.banner>=0?P.banner:0]||BANNERS[0];c.append(ban);
-  const top=el('div','ptop'),nm=el('div','pname');applyName(nm,id,base);top.append(avEl(id,base,'big'),nm,el('div','sub','@'+base));c.append(top);
+  const top=el('div','ptop'),nm=el('div','pname');applyName(nm,id,base);top.append(avEl(id,base,'big nc'),nm,el('div','sub','@'+base));c.append(top);
   if(P.bio)c.append(el('div','pbio',P.bio));
   if(mine){
    const d={pin:[...(P.pin||[])],status:P.status||'',nstyle:P.nstyle||'',frame:P.frame||'',banner:P.banner>=0?P.banner:-1,wall:P.wall>0?P.wall:0};
@@ -508,44 +541,80 @@ function openProfile(id){
    sec(c,'Вся коллекция ('+all.length+')');const b=el('div','grid');all.forEach(g=>b.append(giftEl(g)));if(!all.length)b.append(el('div','sub','Пусто'));c.append(b);
    const gb=el('button','p','🎁 Подарить');gb.style.marginTop='12px';gb.onclick=()=>{mod.style.display='none';openChat(id);setTimeout(openGifts,60)};c.append(gb)}
  })}
-$('#hav').onclick=$('#title').onclick=()=>cur&&openProfile(cur);
+$('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>cur&&openProfile(cur);
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
-let pc=null,stream=null,peer=null,pend=[],inc=null;
+let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
 const sig=(to,d)=>addDoc(collection(db,'users',to,'signals'),{from:uid,d:JSON.stringify(d),ts:Date.now()}).catch(()=>{});
-function ui(s,a,id){$('#call').style.display='flex';$('#cs').textContent=s;$('#acc').style.display=a?'':'none';
- const c=$('#cav');c.textContent='';if(id&&friends.has(id))c.append(avEl(id,friends.get(id).name,'big'+(a||s.startsWith('Звоним')?' ring':'')))}
-async function setup(v){
- stream=await navigator.mediaDevices.getUserMedia({audio:true,video:v});
- pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});stream.getTracks().forEach(t=>pc.addTrack(t,stream));
- pc.ontrack=e=>{$('#rv').srcObject=e.streams[0]};pc.onicecandidate=e=>e.candidate&&sig(peer,{k:'ice',c:e.candidate.toJSON()});
- pc.onconnectionstatechange=()=>{if(!pc)return;if(pc.connectionState==='connected'){stopRing();ui('Разговор идёт',false,peer);$('#cav .av')?.classList.remove('ring')}if(pc.connectionState==='failed')end(true)};
- $('#lv').srcObject=stream;$('#lv').style.display=v?'':'none';
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function watch(ms,cb){try{const c=ctx(),src=c.createMediaStreamSource(ms),an=c.createAnalyser();an.fftSize=256;src.connect(an);const b=new Uint8Array(an.frequencyBinCount);let run=true;
+ (function tick(){if(!run)return;an.getByteFrequencyData(b);let s=0;for(const v of b)s+=v;cb(s/b.length>12);requestAnimationFrame(tick)})();
+ return()=>{run=false;try{src.disconnect()}catch(e){}}}catch(e){return()=>{}}}
+function ui(status,incoming,id){
+ const C=$('#call');C.style.display='flex';C.classList.toggle('incoming',!!incoming);if(incoming)C.classList.remove('min');
+ const f=friends.get(id)||{name:'?'};applyName($('#cname'),id,f.name);$('#cs').textContent=status;
+ const a=$('#cav');a.textContent='';a.append(avEl(id,f.name,'xl nc'+(incoming||status.startsWith('Звоним')?' ring':'')));
+ const s=$('#sav');s.textContent='';s.append(avEl(uid,me,'lg nc'));
 }
+function started(){stopRing();if(up)return;up=true;t0=Date.now();ui('00:00',false,peer);
+ tInt=setInterval(()=>{const t=fmt(Math.floor((Date.now()-t0)/1000));$('#cs').textContent=t;$('#ptimer').textContent=t},1000);
+ if(camT||scrT)sig(peer,{k:'vid',on:true,scr:!!scrT})}
+async function applyVideo(){
+ const t=scrT||camT||null;if(vSender)try{await vSender.replaceTrack(t)}catch(e){}
+ const lv=$('#lv');if(t){lv.srcObject=new MediaStream([t]);lv.style.display='block';$('#sav').style.display='none'}else{lv.srcObject=null;lv.style.display='none';$('#sav').style.display='block'}
+ $('#ccam').classList.toggle('on',!!camT);$('#cscr').classList.toggle('on',!!scrT);
+ if(up&&peer)sig(peer,{k:'vid',on:!!t,scr:!!scrT})}
+async function startCam(){const s=await navigator.mediaDevices.getUserMedia({video:true});camT=s.getVideoTracks()[0];await applyVideo()}
+async function toggleCam(){if(!pc)return;if(camT){camT.stop();camT=null;return applyVideo()}
+ try{await startCam()}catch(e){toast('Нет доступа к камере')}}
+async function toggleScr(){if(!pc)return;if(scrT){scrT.stop();scrT=null;return applyVideo()}
+ try{const s=await navigator.mediaDevices.getDisplayMedia({video:true});scrT=s.getVideoTracks()[0];scrT.onended=()=>{if(scrT){scrT=null;applyVideo()}}}catch(e){return}
+ await applyVideo()}
+async function setup(){
+ stream=await navigator.mediaDevices.getUserMedia({audio:true});
+ pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+ stream.getAudioTracks().forEach(t=>pc.addTrack(t,stream));
+ vSender=pc.addTransceiver('video',{direction:'sendrecv',streams:[stream]}).sender;
+ pc.ontrack=e=>{const r=$('#rv'),s=e.streams[0];if(!s)return;if(r.srcObject!==s)r.srcObject=s;
+  if(e.track.kind==='audio')stops.push(watch(s,x=>$('#cav').classList.toggle('speak',x)))};
+ pc.onicecandidate=e=>e.candidate&&sig(peer,{k:'ice',c:e.candidate.toJSON()});
+ pc.onconnectionstatechange=()=>{if(!pc)return;if(pc.connectionState==='connected')started();if(pc.connectionState==='failed')end(true)};
+ micOff=false;$('#cmic').classList.remove('off');$('#cmic').textContent='🎤';
+ stops.push(watch(stream,x=>$('#self').classList.toggle('speak',x&&!micOff)));
+ await applyVideo()}
 async function flush(){for(const c of pend)try{await pc.addIceCandidate(c)}catch(e){}pend=[]}
 async function call(v){
  if(pc||inc||!cur)return;peer=cur;
- try{await setup(v)}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(false);return}
+ try{await setup();if(v)await startCam()}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(false);return}
  const o=await pc.createOffer();await pc.setLocalDescription(o);
- sig(peer,{k:'offer',sdp:pc.localDescription.toJSON(),video:v});ui('Звоним @'+friends.get(peer).name+'…',false,peer);startRing(snd.back);
-}
+ sig(peer,{k:'offer',sdp:pc.localDescription.toJSON(),video:v});ui('Звоним…',false,peer);startRing(snd.back)}
 async function accept(){
- stopRing();ui('Соединяем…',false,peer);try{await setup(inc.video)}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(true);return}
+ stopRing();ui('Соединяем…',false,peer);
+ try{await setup();if(inc.video)await startCam()}catch(e){alert('Нет доступа к микрофону/камере: '+e.message);end(true);return}
  await pc.setRemoteDescription(inc.sdp);await flush();
- const a=await pc.createAnswer();await pc.setLocalDescription(a);sig(peer,{k:'answer',sdp:pc.localDescription.toJSON()});inc=null;
-}
-function end(n){stopRing();if($('#call').style.display==='flex')snd.end();
- if(n&&peer)sig(peer,{k:'bye'});pc&&pc.close();pc=null;stream&&stream.getTracks().forEach(t=>t.stop());stream=null;peer=null;inc=null;pend=[];
- $('#call').style.display='none';$('#rv').srcObject=null}
+ const a=await pc.createAnswer();await pc.setLocalDescription(a);sig(peer,{k:'answer',sdp:pc.localDescription.toJSON()});inc=null}
+function end(n){stopRing();const C=$('#call');if(C.style.display==='flex')snd.end();
+ if(n&&peer)sig(peer,{k:'bye'});
+ clearInterval(tInt);tInt=null;up=false;stops.forEach(f=>f());stops=[];
+ pc&&pc.close();pc=null;vSender=null;stream&&stream.getTracks().forEach(t=>t.stop());camT&&camT.stop();scrT&&scrT.stop();stream=camT=scrT=null;
+ peer=null;inc=null;pend=[];C.style.display='none';C.classList.remove('rvid','min','incoming');$('#cpill').style.display='none';
+ $('#rv').srcObject=null;$('#lv').srcObject=null;$('#cav').classList.remove('speak');$('#self').classList.remove('speak');
+ if(document.fullscreenElement)document.exitFullscreen()}
 async function onSig(from,d){
  if(!friends.has(from))return;
- if(d.k==='offer'){if(pc||inc){sig(from,{k:'bye'});return}inc={sdp:d.sdp,video:d.video};peer=from;ui('Звонит @'+friends.get(from).name+(d.video?' (видео)':''),true,from);startRing(snd.ring)}
+ if(d.k==='offer'){if(pc||inc){sig(from,{k:'bye'});return}inc={sdp:d.sdp,video:d.video};peer=from;ui(d.video?'Входящий видеозвонок…':'Входящий звонок…',true,from);startRing(snd.ring)}
  else if(from!==peer)return;
  else if(d.k==='answer'&&pc){stopRing();await pc.setRemoteDescription(d.sdp);await flush()}
  else if(d.k==='ice'){if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(d.c)}catch(e){}else pend.push(d.c)}
- else if(d.k==='bye')end(false);
-}
-$('#ca').onclick=()=>call(false);$('#cv').onclick=()=>call(true);$('#acc').onclick=accept;$('#end').onclick=()=>end(true);
+ else if(d.k==='vid')$('#call').classList.toggle('rvid',!!d.on);
+ else if(d.k==='bye')end(false)}
+$('#ca').onclick=()=>call(false);$('#cv').onclick=()=>call(true);$('#acc').onclick=accept;$('#end').onclick=()=>end(true);$('#dec').onclick=()=>end(true);
+$('#cmic').onclick=()=>{micOff=!micOff;stream&&stream.getAudioTracks().forEach(t=>t.enabled=!micOff);$('#cmic').classList.toggle('off',micOff);$('#cmic').textContent=micOff?'🔇':'🎤'};
+$('#ccam').onclick=toggleCam;$('#cscr').onclick=toggleScr;
+$('#cfs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():$('#call').requestFullscreen&&$('#call').requestFullscreen()};
+$('#cmin').onclick=()=>{$('#call').classList.add('min');$('#cpill').style.display='flex'};
+$('#cpill').onclick=()=>{$('#call').classList.remove('min');$('#cpill').style.display='none'};
+if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').style.display='none';
 </script>
 </body>
 </html>
