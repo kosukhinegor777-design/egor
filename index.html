@@ -99,6 +99,23 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 .tover{position:fixed;inset:0;z-index:40;display:grid;place-items:center;text-align:center;color:#fff;background:rgba(10,10,25,.94);font-size:26px;animation:fade .3s;padding:20px}
 .tover small{position:absolute;bottom:20px;opacity:.7;font-size:13px}
 .tover.siren{animation:siren .5s infinite alternate}@keyframes siren{from{background:rgba(200,0,0,.92)}to{background:rgba(0,40,200,.92)}}
+
+#main{position:relative}#hav,#title{cursor:pointer}
+.rb{background:linear-gradient(90deg,#f43f5e,#f59e0b,#10b981,#3b82f6,#8b5cf6,#f43f5e);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:grad 4s linear infinite}
+.av.fr-neon{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #22d3ee,0 0 14px #22d3ee}
+.av.fr-fire{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #f97316,0 0 16px #ef4444}
+.av.fr-rainbow{animation:ringc 3s linear infinite}
+@keyframes ringc{0%,100%{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #f43f5e}33%{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #22c55e}66%{box-shadow:0 0 0 2px var(--panel),0 0 0 4px #3b82f6}}
+.pban{height:110px;border-radius:14px}
+.ptop{display:flex;flex-direction:column;align-items:center;margin-top:-52px;gap:2px}.ptop .av{border:4px solid var(--panel)}
+.pname{font-size:22px;font-weight:700}.pbio{text-align:center;margin:10px 0;color:var(--text);white-space:pre-wrap}
+.opt.sel,.gift.sel{outline:3px solid var(--brand)}.opt{font-size:18px;display:grid;place-items:center}
+.m.stk{background:transparent!important;padding:2px 6px}.m.stk small{color:var(--muted)!important}
+.sticker{font-size:76px;line-height:1.1;animation:bounce 1.1s ease-out}
+@keyframes bounce{0%{transform:scale(0) rotate(-30deg)}50%{transform:scale(1.25) rotate(8deg)}100%{transform:scale(1)}}
+#emp{position:absolute;left:12px;bottom:70px;width:min(380px,92%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 10px 40px rgba(0,0,0,.35);display:none;z-index:6;animation:pop .2s}
+.egrid{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;max-height:200px;overflow:auto}
+.eo{font-size:28px;cursor:pointer;padding:3px 5px;border-radius:8px;transition:transform .12s}.eo:hover{transform:scale(1.3);background:var(--their)}.eo.lock{opacity:.45}
 </style>
 </head>
 <body>
@@ -113,7 +130,7 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Сменить аватарку"></span><button id="out" title="Выйти">⏻</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Мой профиль"></span><button id="out" title="Выйти">⏻</button></div>
   <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
@@ -121,7 +138,8 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
   <div id="head"><button id="back">←</button><span id="hav"></span><div class="t"><div class="nm" id="title">Выбери чат</div><div class="sub" id="st"></div></div>
    <button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
   <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
-  <div id="bar"><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send">Отправить</button></div>
+  <div id="emp"></div>
+  <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send">Отправить</button></div>
  </section>
 </div>
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
@@ -143,11 +161,11 @@ const DOMAIN='@egor.app';
 let mode='login',registering=false,uid=null,me=null,friends=new Map(),seen={},avs={},last={},unread={},cur=null,msgs=[],unMsgs=null,shown=0;
 const presUn={},lastUn={},boot=Date.now();
 const ckey=o=>[uid,o].sort().join('_');
-let prem={},cat={},cols={},myGifts=[];
+let prem={},cat={},cols={},myGifts=[],profs={};
 const isPrem=id=>(prem[id]||0)>Date.now();
 const isOn=f=>seen[f]&&Date.now()-seen[f]<50000;
-const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.img&&!x.text?'📷 Фото':x.text):'';
-const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem');return d};
+const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.sticker?'Стикер '+x.sticker:x.img&&!x.text?'📷 Фото':x.text):'';
+const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem','fr-'+((profs[id]&&profs[id].frame)||'gold'));return d};
 
 /* ---- звуки (генерируются в браузере) ---- */
 let ac,muted=false;try{muted=localStorage.getItem('egor_mute')==='1'}catch(e){}
@@ -172,7 +190,7 @@ async function shrink(file,max,q,square){
 }
 async function sendImage(f){
  if(!cur||!f||!f.type.startsWith('image/'))return;
- try{let u=await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,700,.6);
+ try{let u=isPrem(uid)?await shrink(f,1600,.9):await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,1100,.75);if(u.length>900000)u=await shrink(f,700,.6);
   if(u.length>900000)return alert('Картинка слишком большая');
   snd.send();await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',img:u,ts:Date.now()})}
  catch(e){alert('Не удалось отправить фото')}
@@ -180,7 +198,7 @@ async function sendImage(f){
 $('#att').onclick=()=>$('#fimg').click();
 $('#fimg').onchange=e=>{sendImage(e.target.files[0]);e.target.value=''};
 $('#txt').addEventListener('paste',e=>{const f=[...(e.clipboardData?.files||[])].find(x=>x.type.startsWith('image/'));if(f){e.preventDefault();sendImage(f)}});
-$('#meav').onclick=()=>$('#fav').click();
+$('#meav').onclick=()=>openProfile(uid);
 $('#fav').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
  try{await setDoc(doc(db,'presence',uid),{av:await shrink(f,128,.8,true)},{merge:true})}catch(x){alert('Не удалось сменить аватарку')}};
 const lb=$('#lb');lb.onclick=()=>lb.style.display='none';
@@ -241,22 +259,23 @@ function renderList(){
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
-  const w=el('div','w');w.append(el('div','nm',f.name+(isPrem(id)?' ⭐':'')),el('div','sub',prev(last[id])||(on?'в сети':'не в сети')));r.append(w);
+  const w=el('div','w');w.append((()=>{const n=el('div','nm');applyName(n,id,f.name);return n})(),el('div','sub',prev(last[id])||(on?'в сети':'не в сети')));r.append(w);
   if(unread[id])r.append(el('span','bd',unread[id]));r.onclick=()=>openChat(id);L.append(r)});
 }
-function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);$('#title').textContent='@'+f.name+(isPrem(cur)?' ⭐':'');$('#st').textContent=isOn(cur)?'в сети':'не в сети';
+function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);$('#st').textContent='@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
  cur=f;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
  unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs()});
 }
 function renderMsgs(){
- const B=$('#msgs');B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
+ const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
  msgs.forEach((m,i)=>{const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
   const col=isPrem(m.from)&&cols[m.from];if(col){d.style.background=`linear-gradient(135deg,${col},${col}bb)`;d.style.color='#fff'}
   if(m.gift){const c=cat[m.gift.t]||{name:'Подарок',emoji:'🎁',rarity:0},g=el('div','gcard r'+(c.rarity||0));
    if(c.img){const im=el('img');im.src=c.img;g.append(im)}else g.append(el('div','e',c.emoji||'🎁'));
    g.append(el('b','',c.name),el('div','num',m.gift.n?'NFT №'+m.gift.n:'Подарок'));d.append(g)}
+  else if(m.sticker){d.classList.add('stk');d.append(el('div','sticker',m.sticker))}
   else{if(m.img){const im=el('img');im.src=m.img;im.onclick=()=>zoom(m.img);d.append(im)}
    if(m.text)d.append(document.createTextNode(m.text))}
   d.append(el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));B.append(d)});
@@ -286,6 +305,7 @@ function listen(){
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());renderMsgs()});
+ onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
  onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0});
  onSnapshot(doc(db,'trolls',uid),s=>{if(!s.exists())return;const x=s.data();if(x.ts===lastTroll||Date.now()-x.ts>15000)return;lastTroll=x.ts;if(trollOn)runTroll(x)});
  let first=true;
@@ -381,7 +401,8 @@ function openMine(){openMod('🎒 Мои подарки ('+myGifts.length+')',c=
 function openPlus(){openMod('⭐ Косухость+',c=>{
  const on=isPrem(uid),hero=el('div','hero');
  hero.append(el('div','e','⭐'),el('h2','','Косухость+'),el('div','sub',on?'Активна до '+new Date(prem[uid]).toLocaleDateString():'Не активна'));c.append(hero);
- ['⭐ Значок рядом с именем','🟡 Золотое кольцо вокруг аватарки','🎨 Свой цвет сообщений','🎁 Эксклюзивные подарки','✨ Скоро: ещё больше возможностей'].forEach(t=>c.append(el('div','perk',t)));
+ ['⭐ Значок рядом с именем','🏅 Свой статус-эмодзи рядом с именем','🌈 Цветное и радужное (анимированное) имя','🟡 Рамки аватарки: золото, неон, радуга, огонь','🖼️ Цвет баннера профиля и обои чата','🎨 Свой цвет сообщений','😎 Эксклюзивные стикеры — крупные, с анимацией','📷 HD-фото в чатах','📌 12 подарков на витрине вместо 3','🎁 Эксклюзивные подарки'].forEach(t=>c.append(el('div','perk',t)));
+ {const pb=el('button','p','👤 Настроить профиль');pb.style.margin='8px 0';pb.onclick=()=>openProfile(uid);c.append(pb)}
  if(on){sec(c,'Цвет твоих сообщений');const row=el('div','sw');
   ['#5b5bf0','#e5484d','#f59e0b','#10b981','#ec4899','#06b6d4','#111827'].forEach(col=>{const b=el('button','swb');b.style.background=col;
    b.onclick=async()=>{await setDoc(doc(db,'presence',uid),{col},{merge:true});toast('Цвет сохранён')};row.append(b)});c.append(row)}
@@ -430,6 +451,64 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
   const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить «'+x.name+'» из каталога?')){await deleteDoc(doc(db,'catalog',id));openAdmin()}};r.append(b);c.append(r)});
 })}
 $('#plus').onclick=openPlus;$('#shop').onclick=openShop;$('#adm').onclick=openAdmin;$('#gf').onclick=openGifts;
+
+
+/* ---- профиль, стикеры ---- */
+const BANNERS=['linear-gradient(135deg,#5b5bf0,#8b4be8)','linear-gradient(135deg,#f43f5e,#f59e0b)','linear-gradient(135deg,#10b981,#06b6d4)','linear-gradient(135deg,#0f172a,#6366f1)','linear-gradient(135deg,#ec4899,#8b5cf6)','linear-gradient(135deg,#f59e0b,#ef4444,#8b5cf6)'];
+const WALLS=['','linear-gradient(160deg,#1e1b4b,#312e81)','linear-gradient(160deg,#064e3b,#0f766e)','linear-gradient(160deg,#7c2d12,#be123c)','linear-gradient(160deg,#0c4a6e,#7c3aed)','repeating-linear-gradient(45deg,#1f2937 0 14px,#111827 14px 28px)'];
+const EXCL=['🦄','🐉','🪩','🫧','🦚','🪽','🧿','🪬','🌌','🔮','🪐','🛸','👾','🦋','🌸','💫','🔥','👑','💎','🍀','🌈','🎆','🪄','🫶'];
+const COMMON=['😀','😂','🥹','😍','😘','😎','🤔','😴','😭','😡','🥳','🤯','👍','👎','👏','🙏','💪','🔥','✨','💯','❤️','💔','🎉','🎂','🍕','🍔','☕','🐶','🐱','🦊','🐼','🚀','⚽','🎮','🎧','🌹','🌞','🌙'];
+function applyName(e,id,fb){const P=profs[id]||{},pr=isPrem(id);e.classList.remove('rb');e.style.color='';
+ e.textContent=(P.name||fb)+(pr&&P.status?' '+P.status:'')+(pr?' ⭐':'');
+ if(pr&&P.nstyle==='rainbow')e.classList.add('rb');else if(pr&&P.nstyle)e.style.color=P.nstyle}
+async function sendSticker(s){if(!cur)return;if(!isPrem(uid))return toast('Стикеры — для Косухость+ ⭐');snd.send();
+ try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',sticker:s,ts:Date.now()})}catch(e){toast('Не удалось отправить')}}
+function openEmo(){const p=$('#emp');if(p.style.display==='block'){p.style.display='none';return}
+ p.textContent='';const tabs=el('div','tabs'),b1=el('button','on','Обычные'),b2=el('button','','⭐ Эксклюзивные'),g=el('div','egrid');tabs.append(b1,b2);p.append(tabs,g);
+ const show=x=>{b1.classList.toggle('on',!x);b2.classList.toggle('on',!!x);g.textContent='';
+  (x?EXCL:COMMON).forEach(e=>{const s=el('span','eo'+(x&&!isPrem(uid)?' lock':''),e);
+   s.onclick=()=>{if(x){sendSticker(e);p.style.display='none'}else{$('#txt').value+=e;$('#txt').focus()}};g.append(s)});
+  if(x&&!isPrem(uid))g.append(el('div','sub','🔒 Нужна Косухость+: стикеры отправляются крупно и с анимацией'))};
+ b1.onclick=()=>show(0);b2.onclick=()=>show(1);show(0);p.style.display='block'}
+$('#emo').onclick=openEmo;
+function openProfile(id){
+ const mine=id===uid,P=profs[id]||{},base=mine?me:((friends.get(id)||{}).name||'?'),prm=isPrem(id);
+ openMod(mine?'👤 Мой профиль':'👤 Профиль',c=>{
+  const ban=el('div','pban');ban.style.background=BANNERS[prm&&P.banner>=0?P.banner:0]||BANNERS[0];c.append(ban);
+  const top=el('div','ptop'),nm=el('div','pname');applyName(nm,id,base);top.append(avEl(id,base,'big'),nm,el('div','sub','@'+base));c.append(top);
+  if(P.bio)c.append(el('div','pbio',P.bio));
+  if(mine){
+   const d={pin:[...(P.pin||[])],status:P.status||'',nstyle:P.nstyle||'',frame:P.frame||'',banner:P.banner>=0?P.banner:-1,wall:P.wall>0?P.wall:0};
+   const f=el('div','form'),ni=document.createElement('input'),bi=document.createElement('textarea');
+   ni.placeholder='Имя (по умолчанию @'+me+')';ni.maxLength=24;ni.value=P.name||'';
+   bi.placeholder='О себе';bi.maxLength=prm?300:100;bi.value=P.bio||'';bi.rows=3;
+   bi.style.cssText='font:inherit;padding:10px;border-radius:10px;background:var(--bg);color:var(--text);border:1px solid var(--line);resize:vertical';
+   const ab=el('button','','📷 Сменить аватарку');ab.onclick=()=>$('#fav').click();f.append(ni,bi,ab);c.append(f);
+   c.append(el('div','sub','Юзернейм @'+me+' менять нельзя — по нему друзья тебя находят. Имя выше можно менять сколько угодно.'));
+   sec(c,'⭐ Косухость+ — оформление'+(prm?'':' (закрыто)'));
+   if(!prm){const l=el('button','p','Что даёт Косухость+');l.onclick=openPlus;c.append(l)}
+   else{const opts=(t,arr,key,mk)=>{c.append(el('div','sub',t));const r=el('div','sw');
+     arr.forEach(v=>{const b=el('button','swb opt'+(d[key]===v?' sel':''));mk(b,v);b.onclick=()=>{d[key]=v;[...r.children].forEach(x=>x.classList.remove('sel'));b.classList.add('sel')};r.append(b)});c.append(r)};
+    opts('Статус рядом с именем',['',...EXCL.slice(0,11)],'status',(b,v)=>b.textContent=v||'✖');
+    opts('Цвет имени',['','rainbow','#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899'],'nstyle',(b,v)=>{if(v==='rainbow')b.textContent='🌈';else if(v)b.style.background=v;else b.textContent='✖'});
+    opts('Рамка аватарки',['','neon','rainbow','fire'],'frame',(b,v)=>b.textContent={'':'🟡',neon:'🔷',rainbow:'🌈',fire:'🔥'}[v]);
+    opts('Баннер профиля',BANNERS.map((_,i)=>i),'banner',(b,v)=>b.style.background=BANNERS[v]);
+    opts('Обои твоего чата',WALLS.map((_,i)=>i),'wall',(b,v)=>{b.style.background=WALLS[v]||'var(--bg)';b.style.border='1px solid var(--line)'})}
+   const lim=prm?12:3;sec(c,'📌 Витрина — нажми на подарок, чтобы закрепить (до '+lim+')');const pg=el('div','grid');
+   myGifts.forEach(g=>{const e=giftEl(g,()=>{const i=d.pin.indexOf(g.id);if(i>=0){d.pin.splice(i,1);e.classList.remove('sel')}else if(d.pin.length<lim){d.pin.push(g.id);e.classList.add('sel')}else toast('Лимит витрины: '+lim)});
+    if(d.pin.includes(g.id))e.classList.add('sel');pg.append(e)});
+   if(!myGifts.length)pg.append(el('div','sub','У тебя пока нет подарков'));c.append(pg);
+   const sv=el('button','p','Сохранить профиль');sv.style.marginTop='14px';
+   sv.onclick=async()=>{const o={name:ni.value.trim().slice(0,24),bio:bi.value.trim().slice(0,prm?300:100),pin:d.pin.filter(i=>allG[i]&&allG[i].owner===uid)};
+    if(prm)Object.assign(o,{status:d.status,nstyle:d.nstyle,frame:d.frame,banner:d.banner,wall:d.wall});
+    try{await setDoc(doc(db,'profiles',uid),o,{merge:true});toast('Профиль сохранён ✅');mod.style.display='none'}catch(e){toast('Не удалось сохранить')}};c.append(sv)}
+  else{const pins=(P.pin||[]).map(i=>allG[i]?{...allG[i],id:i}:null).filter(g=>g&&g.owner===id),
+    all=Object.entries(allG).filter(([,g])=>g.owner===id).map(([i,g])=>({...g,id:i}));
+   sec(c,'📌 Витрина');const a=el('div','grid');pins.forEach(g=>a.append(giftEl(g)));if(!pins.length)a.append(el('div','sub','Пусто'));c.append(a);
+   sec(c,'Вся коллекция ('+all.length+')');const b=el('div','grid');all.forEach(g=>b.append(giftEl(g)));if(!all.length)b.append(el('div','sub','Пусто'));c.append(b);
+   const gb=el('button','p','🎁 Подарить');gb.style.marginTop='12px';gb.onclick=()=>{mod.style.display='none';openChat(id);setTimeout(openGifts,60)};c.append(gb)}
+ })}
+$('#hav').onclick=$('#title').onclick=()=>cur&&openProfile(cur);
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null;
