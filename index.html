@@ -232,6 +232,12 @@ input,textarea{border-radius:14px;padding:12px 14px}
  .brand{padding-top:max(16px,env(safe-area-inset-top))}
  #msgs{padding:14px 12px}.m{max-width:84%}#bar{margin:0 10px 10px}
 }
+.dsep{align-self:center;margin:14px 0 6px;padding:4px 14px;border-radius:999px;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);position:sticky;top:6px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.scream{position:fixed;inset:0;z-index:60;background:#000;display:grid;place-items:center;cursor:pointer;animation:scare .35s ease-out}
+@keyframes scare{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.scream img{width:100%;height:100%;object-fit:cover}.scream .sbig{font-size:40vmin}
+.scream small{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;opacity:.8;font-size:13px;text-shadow:0 1px 6px #000}
+.scream button{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;padding:0;background:rgba(255,255,255,.25);color:#fff}
 </style>
 </head>
 <body>
@@ -394,9 +400,13 @@ function openChat(f){
  cur=f;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
  unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs()});
 }
+function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
+ return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
 function renderMsgs(){
  const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
- msgs.forEach((m,i)=>{const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
+ let lastDay='';
+ msgs.forEach((m,i)=>{const dk=new Date(m.ts).toDateString();if(dk!==lastDay){lastDay=dk;B.append(dayLabel(m.ts))}
+  const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
   const col=isPrem(m.from)&&cols[m.from];if(col){d.style.background=`linear-gradient(135deg,${col},${col}bb)`;d.style.color='#fff'}
   if(m.gift){const c=cat[m.gift.t]||{name:'Подарок',emoji:'🎁',rarity:0},g=el('div','gcard r'+(c.rarity||0));
    if(c.img){const im=el('img');im.src=c.img;g.append(im)}else g.append(el('div','e',c.emoji||'🎁'));
@@ -455,6 +465,11 @@ function celebrate(o){
  confetti(w,[40,50,70,100][o.rarity||0],o.stars?['⭐','✨','🌟']:null);snd.win(o.rarity||0);
  const k=()=>w.remove();w.onclick=k;setTimeout(k,5500)}
 let trollStop=[];
+function screamSound(){if(muted)return;try{const c=ctx(),n=Math.floor(c.sampleRate*.7),b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);
+ for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*(1-i/n);
+ const s=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();s.buffer=b;g.gain.value=.3;f.type='bandpass';f.frequency.value=1800;s.connect(f);f.connect(g);g.connect(c.destination);s.start();
+ const o=c.createOscillator(),g2=c.createGain(),t=c.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(900,t);o.frequency.exponentialRampToValueAtTime(300,t+.6);
+ g2.gain.setValueAtTime(.15,t);g2.gain.exponentialRampToValueAtTime(.001,t+.7);o.connect(g2);g2.connect(c.destination);o.start();o.stop(t+.75)}catch(e){}}
 function runTroll(x){
  const R=document.documentElement,sec=Math.min(30,Math.max(3,+x.sec||10)),T=['tr-flip','tr-shake','tr-rainbow','tr-big','tr-small','tr-blur'];
  const clear=()=>{T.forEach(t=>R.classList.remove(t));trollStop.forEach(f=>f());trollStop=[]};
@@ -469,6 +484,11 @@ function runTroll(x){
   const b=el('button','p','Ок');b.onclick=()=>d.remove();d.firstChild.append(b)}
  else if(x.type==='ban'){let n=Math.min(sec,10);const d=over('<div><div style="font-size:70px">🚫</div><b>Вы забанены администратором</b><div id="bn" style="font-size:48px;margin-top:10px">'+n+'</div></div>');
   const t=setInterval(()=>{n--;const e=d.querySelector('#bn');if(n>0&&e)e.textContent=n;else{clearInterval(t);d.firstChild.innerHTML='<div style="font-size:70px">😄</div><b>Шутка! Ты не забанен</b>';setTimeout(()=>d.remove(),2500)}},1000);trollStop.push(()=>clearInterval(t))}
+ else if(x.type==='scream'){const d=el('div','scream');
+  if(x.img){const im=el('img');im.src=x.img;d.append(im)}else d.append(el('div','sbig','👻'));
+  const cl=el('button','','✕');d.append(el('small','','😈 Это прикол от админа · нажми, чтобы закрыть'),cl);d.onclick=()=>d.remove();document.body.append(d);
+  if(x.snd!==false)screamSound();
+  const t=setTimeout(()=>d.remove(),Math.min(10,Math.max(2,+x.sec||4))*1000);trollStop.push(()=>{clearTimeout(t);d.remove()})}
  else if(x.type==='siren'){const d=over('<div style="font-size:90px">🚨</div>','siren');let k=0;const t=setInterval(()=>{tone(k++%2?600:850,0,.4,.2)},450);
   setTimeout(()=>{clearInterval(t);d.remove()},Math.min(sec,8)*1000);trollStop.push(()=>{clearInterval(t);d.remove()})}
 }
@@ -575,6 +595,14 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
   else{if(!confirm('Запустить у ВСЕХ пользователей?'))return;ids=(await getDocs(collection(db,'usernames'))).docs.map(d=>d.data().uid).filter(i=>i!==uid)}
   const x={type:q(t,'.tt').value,text:q(t,'.tx').value.slice(0,200),sec:+q(t,'.ts').value||10,ts:Date.now(),by:me};
   await Promise.all(ids.map(i=>setDoc(doc(db,'trolls',i),x)));toast('😈 Запущено ('+ids.length+')')};
+ sec(c,'👻 Скример (картинка на весь экран)');const sc=el('div','form');
+ sc.innerHTML='<input class="su" placeholder="Юзернейм (пусто = всем, кроме тебя)"><input class="sf" type="file" accept="image/*"><input class="ss" type="number" value="4" min="2" max="10" placeholder="Секунд (2–10)"><label><input class="sn" type="checkbox" checked> Со звуком (умеренной громкости)</label><div class="row"><button class="sp">👁 Предпросмотр у меня</button><button class="p sg">Запустить 👻</button></div><div class="sub">Картинка закрывается нажатием. Получатель может отключить приколы в окне ⭐ Косухость+.</div>';c.append(sc);
+ const scr=async()=>{const f=q(sc,'.sf').files[0];return{type:'scream',img:f?await shrink(f,900,.75):'',sec:+q(sc,'.ss').value||4,snd:q(sc,'.sn').checked,text:'',ts:Date.now(),by:me}};
+ q(sc,'.sp').onclick=async()=>{runTroll(await scr())};
+ q(sc,'.sg').onclick=async()=>{const u=q(sc,'.su').value.trim();let ids;
+  if(u){const o=await uidOf(u);if(!o)return toast('Не найден');ids=[o]}
+  else{if(!confirm('Запустить скример у ВСЕХ пользователей?'))return;ids=(await getDocs(collection(db,'usernames'))).docs.map(d=>d.data().uid).filter(i=>i!==uid)}
+  const x=await scr();await Promise.all(ids.map(i=>setDoc(doc(db,'trolls',i),x)));toast('👻 Скример запущен ('+ids.length+')')};
  sec(c,'Каталог подарков');
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
