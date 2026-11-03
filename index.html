@@ -238,6 +238,8 @@ input,textarea{border-radius:14px;padding:12px 14px}
 .scream img{width:100%;height:100%;object-fit:cover}.scream .sbig{font-size:40vmin}
 .scream small{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;opacity:.8;font-size:13px;text-shadow:0 1px 6px #000}
 .scream button{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;padding:0;background:rgba(255,255,255,.25);color:#fff}
+.tk{font-size:11px;letter-spacing:-2px;margin-left:2px}.tk.r{color:#7dd3fc;opacity:1}
+.sub.typ{color:var(--brand);font-weight:600;animation:blinkt 1.2s ease-in-out infinite}@keyframes blinkt{50%{opacity:.45}}
 </style>
 </head>
 <body>
@@ -372,18 +374,18 @@ function start(id,name){
  onSnapshot(doc(db,'presence',uid),p=>{if(p.exists()){const v=p.data();if(v.av)avs[uid]=v.av;cols[uid]=v.col||'';renderMe();renderMsgs()}});
  onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{
   friends=new Map();
-  s.docs.forEach(d=>{const x=d.data(),o=x.members.find(m=>m!==uid);friends.set(o,{name:x.names[o]||'друг',key:d.id});
+  s.docs.forEach(d=>{const x=d.data(),o=x.members.find(m=>m!==uid);friends.set(o,{name:x.names[o]||'друг',key:d.id,read:((x.read||{})[o])||0,typing:((x.typing||{})[o])||0});
    if(!presUn[o])presUn[o]=onSnapshot(doc(db,'presence',o),p=>{const v=p.exists()?p.data():{};seen[o]=v.t||0;if(v.av)avs[o]=v.av;cols[o]=v.col||'';renderList();head()});
    if(!lastUn[o])lastUn[o]=onSnapshot(query(collection(db,'friendships',d.id,'messages'),orderBy('ts'),limitToLast(1)),m=>m.docChanges().forEach(ch=>{
     if(ch.type!=='added')return;const x=ch.doc.data();last[o]=x;
     if(x.from!==uid&&x.ts>boot){if(cur===o&&!document.hidden)snd.recv();else{unread[o]=(unread[o]||0)+1;snd.recv();updTitle()}}
     renderList()}))});
-  renderList()});
+  renderList();head();{const rd=(friends.get(cur)||{}).read||0;if(rd!==prevRd){prevRd=rd;renderMsgs()}}});
  onSnapshot(collection(db,'users',uid,'signals'),s=>s.docChanges().forEach(ch=>{
   if(ch.type!=='added')return;const x=ch.doc.data();deleteDoc(ch.doc.ref);
   if(Date.now()-x.ts<30000)onSig(x.from,JSON.parse(x.d))}));
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cur&&unread[cur]){unread[cur]=0;updTitle();renderList()}});
+document.addEventListener('visibilitychange',()=>{markRead();if(!document.hidden&&cur&&unread[cur]){unread[cur]=0;updTitle();renderList()}});
 
 /* ---- чаты ---- */
 function renderList(){
@@ -391,14 +393,14 @@ function renderList(){
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
-  const w=el('div','w');w.append((()=>{const n=el('div','nm');applyName(n,id,f.name);return n})(),el('div','sub',prev(last[id])||(on?'в сети':'не в сети')));r.append(w);
+  const w=el('div','w');w.append((()=>{const n=el('div','nm');applyName(n,id,f.name);return n})(),(()=>{const t=isTyp(id);return el('div','sub'+(t?' typ':''),t?'печатает…':(prev(last[id])||(on?'в сети':'не в сети')))})());r.append(w);
   if(unread[id])r.append(el('span','bd',unread[id]));r.onclick=()=>openChat(id);L.append(r)});
 }
-function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);$('#st').textContent='@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');
+function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает…':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
- cur=f;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
- unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs()});
+ cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
+ unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs();markRead()});
 }
 function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
  return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
@@ -414,10 +416,12 @@ function renderMsgs(){
   else if(m.sticker){d.classList.add('stk');d.append(el('div','sticker',m.sticker))}
   else{if(m.img){const im=el('img');im.src=m.img;im.onclick=()=>zoom(m.img);d.append(im)}
    if(m.text)d.append(document.createTextNode(m.text))}
-  d.append(el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));B.append(d)});
+  const sm=el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  if(m.from===uid){const rdv=(friends.get(cur)||{}).read||0,ok=m.ts<=rdv;sm.append(' ',el('span','tk'+(ok?' r':''),ok?'✓✓':'✓'))}
+  d.append(sm);B.append(d)});
  shown=msgs.length;B.scrollTop=B.scrollHeight;
 }
-async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';snd.send();
+async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';snd.send();typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
  try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
 $('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
 $('#back').onclick=()=>$('#app').classList.remove('chat');
@@ -762,6 +766,17 @@ function openCasino(tab){
    b.onclick=()=>{[...tabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');body.textContent='';G[i](body)};tabs.append(b)});
   c.append(tabs,body);G[tab](body)},true)}
 $('#cas').onclick=()=>openCasino(0);
+
+
+/* ---- «печатает…» и «прочитано» ---- */
+let prevRd=0,typSent=0,typSeen={},myRead={};
+const isTyp=id=>{const f=friends.get(id);return !!(f&&f.typing&&Date.now()-f.typing<4500)};
+setInterval(()=>{let ch=false;friends.forEach((f,id)=>{const t=isTyp(id);if(typSeen[id]!==t){typSeen[id]=t;ch=true}});if(ch){renderList();head()}},1000);
+$('#txt').addEventListener('input',()=>{if(!cur||!$('#txt').value)return;const n=Date.now();
+ if(n-typSent>2500){typSent=n;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:n}).catch(()=>{})}});
+function markRead(){if(!cur||document.hidden)return;
+ const t=msgs.reduce((a,m)=>m.from!==uid?Math.max(a,m.ts):a,0);
+ if(t>(myRead[cur]||0)){myRead[cur]=t;updateDoc(doc(db,'friendships',ckey(cur)),{['read.'+uid]:t}).catch(()=>{myRead[cur]=0})}}
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
