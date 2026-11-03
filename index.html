@@ -159,7 +159,8 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 .upc{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
 .wheel{position:relative;width:260px;height:260px}.wheel svg{width:100%;height:100%}
 .aw{position:absolute;inset:0}
-.ar{position:absolute;left:50%;top:-6px;width:0;height:0;margin-left:-9px;border-left:9px solid transparent;border-right:9px solid transparent;border-top:22px solid #facc15;filter:drop-shadow(0 0 6px #facc15)}
+.ar{position:absolute;left:50%;bottom:-6px;width:0;height:0;margin-left:-9px;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:22px solid #facc15;filter:drop-shadow(0 0 6px #facc15)}
+.pct{flex-direction:column}.pct::after{content:"шанс успеха";position:absolute;left:0;right:0;top:63%;text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
 .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:46px;font-weight:800;color:#facc15}
 @media (max-width:800px){.upg{grid-template-columns:1fr}}
 
@@ -693,15 +694,16 @@ function gSlots(p){
    for(let i=0;i<3;i++){await sleep(700);R[i].textContent=S[fin[i]];R[i].dataset.d=1}
    clearInterval(t);R.forEach(x=>delete x.dataset.d);await finish(r,res)}catch(e){errT(e)}go.disabled=false};
  p.append(mr,rl,go,res)}
+function arcPath(ch){if(ch<=0)return '';const hw=ch*1.8,P=a=>{const r=a*Math.PI/180;return(100+80*Math.cos(r)).toFixed(2)+' '+(100+80*Math.sin(r)).toFixed(2)};return 'M '+P(90-hw)+' A 80 80 0 '+(ch>50?1:0)+' 1 '+P(90+hw)}
 function gUpg(p){
  let sg=null,tid=null;const price=t=>(cat[t]||{}).price||0;
  const w=el('div','upg'),L=el('div','upp'),C=el('div','upc'),Rt=el('div','upp'),lg=el('div','grid'),rg=el('div','grid'),ci=document.createElement('input');
  ci.type='number';ci.min=0;ci.value=0;ci.placeholder='+ коски к ставке';
  const wheel=el('div','wheel');
- wheel.innerHTML='<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="#2a2a30" stroke-width="16"/><circle class="arc" cx="100" cy="100" r="80" fill="none" stroke="#facc15" stroke-width="16" stroke-dasharray="0 503" transform="rotate(-90 100 100)"/></svg><div class="aw"><div class="ar"></div></div><div class="pct">0%</div>';
+ wheel.innerHTML='<svg viewBox="0 0 200 200"><defs><linearGradient id="ug" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="180"><stop offset="0" stop-color="#84cc16"/><stop offset=".55" stop-color="#facc15"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs><circle cx="100" cy="100" r="80" fill="none" stroke="#2a2a30" stroke-width="16"/><path class="arc" d="" fill="none" stroke="url(#ug)" stroke-width="16"/></svg><div class="aw"><div class="ar"></div></div><div class="pct">0%</div>';
  const arc=wheel.querySelector('.arc'),aw=wheel.querySelector('.aw'),pct=wheel.querySelector('.pct'),info=el('div','sub'),go=el('button','p','⬆ Улучшить'),res=el('div','gres');
  const calc=()=>{const coins=Math.max(0,Math.floor(+ci.value||0)),stake=(sg?price(sg.type):0)+coins,tp=tid?price(tid):0;return{coins,stake,tp,ch:stake>0&&tp>stake?Math.min(95,Math.floor(95*stake/tp)):0}};
- const upd=()=>{const {stake,tp,ch}=calc();arc.setAttribute('stroke-dasharray',(503*ch/100)+' 503');pct.textContent=ch+'%';
+ const upd=()=>{const {stake,tp,ch}=calc();arc.setAttribute('d',arcPath(ch));pct.textContent=ch+'%';pct.style.color=ch>=60?'#84cc16':ch>=30?'#facc15':'#ef4444';
   info.textContent=!sg?'Выбери свой подарок слева':!tid?'Выбери цель справа':ch<1?'Цель слишком дорогая для такой ставки (шанс меньше 1%)':'Ставка '+stake+' → цель '+tp+' · шанс '+ch+'%';
   go.disabled=!(sg&&tid&&ch>=1);[...lg.children].forEach(x=>x.classList.toggle('sel',x._g===sg));[...rg.children].forEach(x=>x.classList.toggle('sel',x._t===tid))};
  L.append(el('b','','Твои подарки'),el('div','sub','Выбери один подарок, можно добавить коски'),lg,ci);
@@ -716,7 +718,7 @@ function gUpg(p){
  go.onclick=async()=>{go.disabled=true;res.textContent='';
   try{await freshBal();const {coins,stake,tp,ch}=calc();if(coins>bal)throw 'Не хватает косок';
    const r=await bet({kind:'upgrade',stake,target:tp,chance:ch,coinsIn:coins,debit:coins,inGift:sg.id,outType:tid},(b,id)=>b.update(doc(db,'gifts',sg.id),{owner:'house',lastBet:id}));
-   aw.style.transition='none';aw.style.transform='rotate(0deg)';void aw.offsetWidth;aw.style.transition='transform 4s cubic-bezier(.12,.7,.1,1)';aw.style.transform='rotate('+(2160+r.roll*3.6+1.8)+'deg)';
+   aw.style.transition='none';aw.style.transform='rotate(0deg)';void aw.offsetWidth;aw.style.transition='transform 4s cubic-bezier(.12,.7,.1,1)';aw.style.transform='rotate('+(2160+r.roll*3.6-ch*1.8+1.8)+'deg)';
    await sleep(4300);
    if(r.win){let ok=false;for(let i=0;i<3&&!ok;i++){try{await setDoc(doc(db,'gifts','u'+r.id),{type:tid,owner:uid,ownerName:me,fromUid:'upgrade',fromName:'Апгрейд',n:(maxN[tid]||0)+1,ts:Date.now(),bet:r.id});ok=true}catch(e){await sleep(700)}}
     res.textContent=ok?'🔥 Апгрейд удался!':'Выигрыш есть, но выдать подарок не удалось — напиши админу';res.className='gres win'}
