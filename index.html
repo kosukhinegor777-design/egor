@@ -162,6 +162,75 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 .ar{position:absolute;left:50%;top:-6px;width:0;height:0;margin-left:-9px;border-left:9px solid transparent;border-right:9px solid transparent;border-top:22px solid #facc15;filter:drop-shadow(0 0 6px #facc15)}
 .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:46px;font-weight:800;color:#facc15}
 @media (max-width:800px){.upg{grid-template-columns:1fr}}
+
+/* ===== Aurora redesign ===== */
+:root{--bg:#eef0fb;--panel:#fff;--card:rgba(255,255,255,.82);--text:#14162b;--muted:#767b97;--line:rgba(20,22,43,.08);--brand:#6366f1;--brand2:#a855f7;--their:#eef0fc;--shadow:0 12px 40px rgba(70,70,140,.14)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#090913;--panel:#171829;--card:rgba(22,23,41,.74);--text:#eef0ff;--muted:#8d92b0;--line:rgba(255,255,255,.07);--their:#252741;--shadow:0 12px 44px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#090913;--panel:#171829;--card:rgba(22,23,41,.74);--text:#eef0ff;--muted:#8d92b0;--line:rgba(255,255,255,.07);--their:#252741;--shadow:0 12px 44px rgba(0,0,0,.5)}
+:root[data-theme="light"]{color-scheme:light}
+*{scrollbar-width:thin;scrollbar-color:rgba(130,130,170,.35) transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(130,130,170,.35);border-radius:8px}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px;
+ background:radial-gradient(900px 520px at 8% -8%,rgba(99,102,241,.38),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(236,72,153,.22),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(34,211,238,.2),transparent 60%),var(--bg)}
+button{border-radius:12px;font-weight:600;letter-spacing:.01em}
+button.p{background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 6px 18px rgba(99,102,241,.38)}
+input,textarea{border-radius:14px;padding:12px 14px}
+#auth{margin:-14px;height:calc(100% + 28px)}
+#auth .box{border-radius:28px;padding:32px 28px;box-shadow:0 30px 80px rgba(0,0,0,.35);gap:12px}
+#auth h1{font-size:30px;background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#auth img{width:84px;height:84px;border-radius:24px;box-shadow:0 10px 30px rgba(99,102,241,.5)}
+.tabs{background:var(--their);padding:4px;border-radius:14px}.tabs button{background:transparent;border-radius:11px}.tabs .on{background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 4px 12px rgba(99,102,241,.4)}
+#app{height:calc(100dvh - 28px);gap:14px;background:transparent}
+#side,#main{background:var(--card);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden}
+#side{width:380px;max-width:42%;border-right:1px solid var(--line)}
+.brand{background:none;color:var(--text);padding:18px 18px 10px;gap:12px}
+.brand>img{width:42px;height:42px;border-radius:13px;box-shadow:0 6px 20px rgba(99,102,241,.5)}
+.bt{flex:1;font-size:22px;font-weight:800;line-height:1.05;background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.bt small{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;-webkit-text-fill-color:var(--muted);margin-top:3px}
+#meav{flex:none}.av.sm{width:44px;height:44px;font-size:17px;border:2px solid var(--panel);box-shadow:0 4px 14px rgba(99,102,241,.45)}
+#quick{display:flex;gap:8px;padding:2px 14px 12px;overflow-x:auto;flex:none}
+#quick button{display:flex;align-items:center;gap:6px;white-space:nowrap;background:var(--their);padding:9px 13px;border-radius:999px;font-size:14px;transition:transform .15s,background .2s,box-shadow .2s}
+#quick button i{font-style:normal;font-size:13px}#quick button:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(99,102,241,.3);filter:none}
+#quick #out:hover{background:#e5484d;color:#fff}
+#addrow{padding:4px 14px 12px;border:0;gap:8px}#addrow input{background:var(--their);border-color:transparent;border-radius:999px;padding:11px 16px}
+#addrow button{border-radius:50%;width:44px;height:44px;padding:0;font-size:22px;flex:none}
+#list{padding:0 8px 10px}
+.ct{margin:3px 0;border:0;border-radius:18px;padding:11px 12px;gap:13px;transition:background .2s,transform .15s}
+.ct:hover{background:var(--their);padding-left:12px;transform:translateX(3px)}
+.ct.on{background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(168,85,247,.16));box-shadow:inset 3px 0 0 var(--brand)}
+.nm{font-size:15.5px;font-weight:700}.sub{font-size:13px}
+.av{width:50px;height:50px;box-shadow:0 4px 14px rgba(0,0,0,.2)}.av.on::after{width:13px;height:13px;border:3px solid var(--panel);background:#22c55e;box-shadow:0 0 8px #22c55e}
+.bd{min-width:22px;text-align:center;padding:2px 8px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 3px 10px rgba(99,102,241,.5)}
+#head{background:transparent;padding:12px 20px;min-height:72px;gap:14px}
+#head .nm{font-size:17px}
+#head>button{width:42px;height:42px;padding:0;border-radius:50%;font-size:18px;background:var(--their);transition:transform .15s,background .2s}
+#head>button:hover{background:linear-gradient(135deg,var(--brand),var(--brand2));filter:none;transform:scale(1.08)}
+#back{width:40px}
+#msgs{padding:22px 26px;gap:5px;background:radial-gradient(circle at 15% 20%,rgba(99,102,241,.09),transparent 45%),radial-gradient(circle at 85% 75%,rgba(168,85,247,.09),transparent 45%),var(--bg)}
+.m{max-width:68%;padding:9px 14px 6px;border-radius:20px 20px 20px 6px;font-size:15px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.m.me{background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:20px 20px 6px 20px;box-shadow:0 6px 18px rgba(99,102,241,.35)}
+.m small{text-align:right;font-size:11px;margin-top:2px;opacity:.7}
+.m img{border-radius:14px}
+.empty{font-size:15px;max-width:260px}.empty::before{content:"💬";display:block;font-size:64px;margin-bottom:10px;filter:drop-shadow(0 8px 16px rgba(99,102,241,.4))}
+#bar{margin:0 18px 18px;padding:7px;background:var(--panel);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);gap:6px;padding-bottom:max(7px,env(safe-area-inset-bottom))}
+#txt{background:transparent;border:0;box-shadow:none!important;padding:12px 8px;font-size:15.5px}
+#bar button.ic{width:44px;height:44px;padding:0;border-radius:50%;background:transparent;font-size:22px}#bar button.ic:hover{background:var(--their);filter:none}
+#send{width:48px;height:48px;padding:0;border-radius:50%;font-size:20px;flex:none}
+#emp{bottom:84px;left:18px;border-radius:20px;box-shadow:var(--shadow);padding:12px}
+#mod{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(8,8,20,.55)}
+#mod .card{border-radius:28px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.5);border:1px solid var(--line)}
+.mh{font-size:20px;margin-bottom:12px}.mh button{width:36px;height:36px;padding:0;border-radius:50%}
+.sec{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:20px 0 10px}
+.gift{border-radius:18px;padding:12px;transition:transform .18s,box-shadow .2s}.gift:hover{box-shadow:0 10px 26px rgba(99,102,241,.3)}
+.perk{border-radius:14px;padding:10px 14px;border-left:3px solid var(--brand)}
+.cbalrow{border-radius:16px;background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(168,85,247,.14))}
+.toast{background:rgba(15,15,30,.92);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:16px}
+@media (max-width:700px){
+ body{padding:0}#auth{margin:0;height:100%}
+ #app{height:100dvh;gap:0}#side,#main{border-radius:0;border:0;box-shadow:none;max-width:100%;width:100%}
+ .brand{padding-top:max(16px,env(safe-area-inset-top))}
+ #msgs{padding:14px 12px}.m{max-width:84%}#bar{margin:0 10px 10px}
+}
 </style>
 </head>
 <body>
@@ -176,8 +245,9 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span>Egor</span><button id="plus" title="Косухость+">⭐</button><button id="shop" title="Магазин и коллекция">🛍️</button><button id="cas" title="Казино и апгрейдер">🎰</button><button id="adm" title="Панель админа" style="display:none">🛡️</button><button id="mute" title="Звуки">🔔</button><span id="meav" style="flex:none" title="Мой профиль"></span><button id="out" title="Выйти">⏻</button></div>
-  <div id="addrow"><input id="addu" placeholder="Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span></div>
+  <div id="quick"><button id="plus" title="Косухость+">⭐<i>Плюс</i></button><button id="shop" title="Магазин и коллекция">🛍️<i>Магазин</i></button><button id="cas" title="Казино и апгрейдер">🎰<i>Казино</i></button><button id="adm" title="Панель админа" style="display:none">🛡️<i>Админ</i></button><button id="mute" title="Звуки">🔔</button><button id="theme" title="Светлая / тёмная тема">🌓</button><button id="out" title="Выйти">⏻</button></div>
+  <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
  <section id="main">
@@ -185,7 +255,7 @@ html.tr-big body{zoom:1.6}html.tr-small body{zoom:.65}html.tr-blur body{filter:b
    <button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
   <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
   <div id="emp"></div>
-  <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send">Отправить</button></div>
+  <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send" aria-label="Отправить">➤</button></div>
  </section>
 </div>
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
@@ -735,6 +805,8 @@ $('#cfs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():$('#
 $('#cmin').onclick=()=>{$('#call').classList.add('min');$('#cpill').style.display='flex'};
 $('#cpill').onclick=()=>{$('#call').classList.remove('min');$('#cpill').style.display='none'};
 if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').style.display='none';
+(function(){const R=document.documentElement;try{const t=localStorage.getItem('egor_theme');if(t)R.dataset.theme=t}catch(e){}
+ $('#theme').onclick=()=>{const dark=R.dataset.theme?R.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches,n=dark?'light':'dark';R.dataset.theme=n;try{localStorage.setItem('egor_theme',n)}catch(e){}}})();
 </script>
 </body>
 </html>
