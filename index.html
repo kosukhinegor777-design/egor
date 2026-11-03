@@ -484,7 +484,7 @@ async function buy(id){
  catch(e){toast('Не удалось купить (возможно, кто-то успел раньше)')}}
 function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',c=>{
  sec(c,'NFT-подарки в продаже');const g=el('div','grid');
- Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
+ Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
   g.append(giftEl({type:id},()=>buy(id),'🪙 '+x.price+(left!=null?' · осталось '+left+'/'+x.supply:'')))});
  if(!g.children.length)g.append(el('div','sub','Админ ещё не выставил NFT на продажу'));c.append(g);
  sec(c,'Моя коллекция ('+myGifts.length+')');const m=el('div','grid');myGifts.forEach(x=>m.append(giftEl(x)));
