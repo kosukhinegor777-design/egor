@@ -240,6 +240,20 @@ input,textarea{border-radius:14px;padding:12px 14px}
 .scream button{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;padding:0;background:rgba(255,255,255,.25);color:#fff}
 .tk{font-size:11px;letter-spacing:-2px;margin-left:2px}.tk.r{color:#7dd3fc;opacity:1}
 .sub.typ{color:var(--brand);font-weight:600;animation:blinkt 1.2s ease-in-out infinite}@keyframes blinkt{50%{opacity:.45}}
+#side{position:relative}
+#dots{width:44px;height:44px;padding:0;border-radius:50%;background:var(--their);font-size:24px;line-height:1;display:grid;place-items:center;flex:none;transition:transform .35s cubic-bezier(.2,1.4,.4,1),background .2s}
+#dots.on{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;transform:rotate(90deg)}
+#menu{position:absolute;top:70px;right:14px;z-index:20;display:flex;flex-direction:column;gap:4px;padding:10px;min-width:236px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.4);transform-origin:top right;opacity:0;pointer-events:none;transform:scale(.55) translateY(-18px);transition:opacity .22s,transform .32s cubic-bezier(.2,1.4,.4,1)}
+#menu.open{opacity:1;pointer-events:auto;transform:none}
+#menu button{display:flex;align-items:center;gap:14px;width:100%;justify-content:flex-start;padding:12px 14px;border-radius:14px;background:transparent;font-size:16px;font-weight:600;text-align:left;opacity:0;transform:translateY(-20px) scale(.9);transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1),background .15s}
+#menu button i{font-style:normal;font-size:15px}
+#menu.open button{opacity:1;transform:none}
+#menu button:hover{background:var(--their);filter:none}
+#menu #out:hover{background:#e5484d;color:#fff}
+#menu.open button:nth-of-type(1){transition-delay:.03s}#menu.open button:nth-of-type(2){transition-delay:.07s}#menu.open button:nth-of-type(3){transition-delay:.11s}#menu.open button:nth-of-type(4){transition-delay:.15s}
+#menu.open button:nth-of-type(5){transition-delay:.19s}#menu.open button:nth-of-type(6){transition-delay:.23s}#menu.open button:nth-of-type(7){transition-delay:.27s}
+#menu hr{border:0;height:1px;background:var(--line);margin:4px 8px;width:calc(100% - 16px)}
+@media (max-width:700px){#menu{right:10px;top:max(70px,calc(env(safe-area-inset-top) + 62px))}}
 </style>
 </head>
 <body>
@@ -254,8 +268,17 @@ input,textarea{border-radius:14px;padding:12px 14px}
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span></div>
-  <div id="quick"><button id="plus" title="Косухость+">⭐<i>Плюс</i></button><button id="shop" title="Магазин и коллекция">🛍️<i>Магазин</i></button><button id="cas" title="Казино и апгрейдер">🎰<i>Казино</i></button><button id="adm" title="Панель админа" style="display:none">🛡️<i>Админ</i></button><button id="mute" title="Звуки">🔔</button><button id="theme" title="Светлая / тёмная тема">🌓</button><button id="out" title="Выйти">⏻</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span><button id="dots" aria-label="Меню" title="Меню">⋮</button></div>
+  <div id="menu">
+   <button id="plus" title="Косухость+">⭐<i>Косухость+</i></button>
+   <button id="shop" title="Магазин и коллекция">🛍️<i>Магазин</i></button>
+   <button id="cas" title="Казино и апгрейдер">🎰<i>Казино</i></button>
+   <button id="adm" title="Панель админа" style="display:none">🛡️<i>Админ-панель</i></button>
+   <hr>
+   <button id="mute" title="Звуки">🔔<i>Звуки включены</i></button>
+   <button id="theme" title="Светлая / тёмная тема">🌓<i>Тема</i></button>
+   <button id="out" title="Выйти">⏻<i>Выйти</i></button>
+  </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
@@ -311,7 +334,7 @@ const snd={send:()=>{tone(660,0,.12,.1);tone(880,.07,.14,.1)},recv:()=>{tone(880
  ring:()=>{[0,.4].forEach(x=>{tone(740,x,.25,.22);tone(988,x+.12,.25,.22)})},back:()=>tone(440,0,.9,.08),end:()=>{tone(500,0,.15,.12);tone(330,.15,.3,.12)}};
 snd.win=r=>{[523,659,784,1047,...(r>=3?[1319,1568]:[])].forEach((f,i)=>tone(f,i*.11,.35,.16))};
 let ringT=null;const startRing=f=>{stopRing();f();ringT=setInterval(f,f===snd.ring?2200:3000)},stopRing=()=>{clearInterval(ringT);ringT=null};
-const setMute=()=>{$('#mute').textContent=muted?'🔕':'🔔'};setMute();
+const setMute=()=>{$('#mute').innerHTML=(muted?'🔕':'🔔')+'<i>'+(muted?'Звуки выключены':'Звуки включены')+'</i>'};setMute();
 $('#mute').onclick=()=>{muted=!muted;try{localStorage.setItem('egor_mute',muted?'1':'0')}catch(e){}setMute()};
 const updTitle=()=>{const n=Object.values(unread).reduce((a,b)=>a+b,0);document.title=(n?`(${n}) `:'')+'Egor'};
 
@@ -850,6 +873,11 @@ $('#cfs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():$('#
 $('#cmin').onclick=()=>{$('#call').classList.add('min');$('#cpill').style.display='flex'};
 $('#cpill').onclick=()=>{$('#call').classList.remove('min');$('#cpill').style.display='none'};
 if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').style.display='none';
+(function(){const m=$('#menu'),d=$('#dots'),close=()=>{m.classList.remove('open');d.classList.remove('on')};
+ d.onclick=e=>{e.stopPropagation();d.classList.toggle('on',m.classList.toggle('open'))};
+ m.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.id!=='mute'&&b.id!=='theme')close()});
+ document.addEventListener('click',e=>{if(!e.target.closest('#menu'))close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
 (function(){const R=document.documentElement;try{const t=localStorage.getItem('egor_theme');if(t)R.dataset.theme=t}catch(e){}
  $('#theme').onclick=()=>{const dark=R.dataset.theme?R.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches,n=dark?'light':'dark';R.dataset.theme=n;try{localStorage.setItem('egor_theme',n)}catch(e){}}})();
 </script>
