@@ -254,9 +254,28 @@ input,textarea{border-radius:14px;padding:12px 14px}
 #menu.open button:nth-of-type(5){transition-delay:.19s}#menu.open button:nth-of-type(6){transition-delay:.23s}#menu.open button:nth-of-type(7){transition-delay:.27s}
 #menu hr{border:0;height:1px;background:var(--line);margin:4px 8px;width:calc(100% - 16px)}
 @media (max-width:700px){#menu{right:10px;top:max(70px,calc(env(safe-area-inset-top) + 62px))}}
+@keyframes shimmer{to{transform:translateX(100%)}}@keyframes rot{to{transform:rotate(360deg)}}
+.sk{position:relative;overflow:hidden;background:var(--their);border-radius:10px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:shimmer 1.4s infinite}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}}
+:root[data-theme="dark"] .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+.sk-row{display:flex;gap:13px;align-items:center;padding:11px 12px;margin:3px 0}
+.sk-av{width:50px;height:50px;border-radius:50%!important;flex:none}.sk-l{flex:1;display:flex;flex-direction:column;gap:9px}.sk-l .sk{height:12px}
+.sk-b{height:44px;border-radius:20px;max-width:68%}.sk-g{height:128px;border-radius:18px}
+#boot{position:fixed;inset:0;z-index:100;display:flex;gap:14px;padding:14px;background:radial-gradient(900px 520px at 8% -8%,rgba(99,102,241,.38),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(236,72,153,.22),transparent 55%),var(--bg);transition:opacity .45s}
+#boot.out{opacity:0;pointer-events:none}
+#boot .bs,#boot .bm{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+#boot .bs{width:380px;max-width:42%}#boot .bm{flex:1}.bmm{flex:1;display:flex;flex-direction:column;gap:8px;padding:10px 6px}
+#bootmsg{display:none;position:absolute;left:50%;bottom:40px;transform:translateX(-50%);flex-direction:column;align-items:center;gap:8px;padding:16px 24px;border-radius:20px;background:var(--panel);box-shadow:var(--shadow);text-align:center}
+#bootmsg span{color:var(--muted);font-size:14px}
+button.load{pointer-events:none;opacity:.85}button.load::after{content:"";display:inline-block;width:14px;height:14px;margin-left:10px;vertical-align:-2px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+@media (max-width:700px){#boot{padding:0;gap:0}#boot .bs{width:100%;max-width:100%;border-radius:0;border:0}#boot .bm{display:none}}
 </style>
 </head>
 <body>
+<div id="boot"><div class="bs"><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:45%"></div><div class="sk" style="width:30%"></div></div></div><div class="sk" style="height:44px;border-radius:999px;margin:6px 0 10px"></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:52%"></div><div class="sk" style="width:78%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:40%"></div><div class="sk" style="width:66%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:58%"></div><div class="sk" style="width:72%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:46%"></div><div class="sk" style="width:84%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:50%"></div><div class="sk" style="width:60%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:38%"></div><div class="sk" style="width:74%"></div></div></div><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:55%"></div><div class="sk" style="width:70%"></div></div></div></div><div class="bm"><div class="sk-row"><div class="sk sk-av"></div><div class="sk-l"><div class="sk" style="width:30%"></div><div class="sk" style="width:20%"></div></div></div><div class="bmm"><div class="sk sk-b" style="width:38%;align-self:flex-start"></div><div class="sk sk-b" style="width:26%;align-self:flex-end"></div><div class="sk sk-b" style="width:48%;align-self:flex-start"></div><div class="sk sk-b" style="width:32%;align-self:flex-end"></div><div class="sk sk-b" style="width:42%;align-self:flex-start"></div><div class="sk sk-b" style="width:28%;align-self:flex-end"></div></div><div class="sk" style="height:52px;border-radius:30px"></div></div>
+<div id="bootmsg"><b>Загрузка затянулась</b><span>Проверь интернет или VPN</span><button class="p" onclick="location.reload()">Обновить</button></div></div>
+<script>setTimeout(function(){if(!window.__egorReady){var m=document.getElementById('bootmsg');if(m)m.style.display='flex'}},9000)</script>
 <div id="auth"><div class="box">
  <img src="logo.png" alt="Egor"><h1>Egor</h1>
  <div class="tabs"><button id="tl" class="on">Вход</button><button id="tr">Регистрация</button></div>
@@ -311,6 +330,7 @@ import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOu
 import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
+const hideBoot=()=>{window.__egorReady=1;const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),500)}};
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const DOMAIN='@egor.app';
@@ -347,10 +367,11 @@ async function shrink(file,max,q,square){
 }
 async function sendImage(f){
  if(!cur||!f||!f.type.startsWith('image/'))return;
+ const ph=el('div','sk sk-b');ph.style.cssText='width:38%;height:150px;align-self:flex-end';$('#msgs').append(ph);$('#msgs').scrollTop=1e9;
  try{let u=isPrem(uid)?await shrink(f,1600,.9):await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,1100,.75);if(u.length>900000)u=await shrink(f,700,.6);
   if(u.length>900000)return alert('Картинка слишком большая');
   snd.send();await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',img:u,ts:Date.now()})}
- catch(e){alert('Не удалось отправить фото')}
+ catch(e){alert('Не удалось отправить фото')}finally{ph.remove()}
 }
 $('#att').onclick=()=>$('#fimg').click();
 $('#fimg').onchange=e=>{sendImage(e.target.files[0]);e.target.value=''};
@@ -366,7 +387,8 @@ function setMode(m){mode=m;$('#tl').classList.toggle('on',m==='login');$('#tr').
  $('#ae').style.display=m==='reg'?'':'none';$('#ago').textContent=m==='reg'?'Создать аккаунт':'Войти';$('#aerr').textContent=''}
 $('#tl').onclick=()=>setMode('login');$('#tr').onclick=()=>setMode('reg');
 async function go(){
- const u=$('#au').value.trim().toLowerCase(),pw=$('#ap').value,em=$('#ae').value.trim(),err=t=>$('#aerr').textContent=t;
+ const u=$('#au').value.trim().toLowerCase(),pw=$('#ap').value,em=$('#ae').value.trim(),err=t=>$('#aerr').textContent=t,btn=$('#ago');
+ btn.classList.add('load');btn.disabled=true;
  try{
   if(mode==='reg'){
    if(!/^[a-z0-9_]{3,20}$/.test(u))return err('Юзернейм: 3–20 символов, латиница, цифры, _');
@@ -380,19 +402,22 @@ async function go(){
   }else await signInWithEmailAndPassword(auth,u+DOMAIN,pw);
  }catch(e){registering=false;
   const m={'auth/email-already-in-use':'Юзернейм занят','auth/invalid-credential':'Неверный юзернейм или пароль','auth/weak-password':'Слишком простой пароль','auth/too-many-requests':'Слишком много попыток, подождите'};
-  err(m[e.code]||'Ошибка: '+(e.code||e.message))}
+  err(m[e.code]||'Ошибка: '+(e.code||e.message))}finally{btn.classList.remove('load');btn.disabled=false}
 }
 $('#ago').onclick=go;$('#ap').onkeydown=e=>{if(e.key==='Enter')go()};
 $('#out').onclick=async()=>{await signOut(auth);location.reload()};
 onAuthStateChanged(auth,async u=>{
- if(registering||!u||uid)return;
- const d=await getDoc(doc(db,'users',u.uid));if(d.exists())start(u.uid,d.data().username);
+ if(registering)return;
+ if(!u){hideBoot();return}
+ if(uid)return;
+ try{const d=await getDoc(doc(db,'users',u.uid));if(d.exists())start(u.uid,d.data().username)}catch(e){$('#aerr').textContent='Нет связи с сервером. Проверь интернет или VPN'}
+ hideBoot();
 });
 
 /* ---- запуск ---- */
 function renderMe(){const s=$('#meav');s.textContent='';s.append(avEl(uid,me,'sm'))}
 function start(id,name){
- uid=id;me=name;$('#auth').style.display='none';$('#app').style.display='flex';renderMe();listen();
+ uid=id;me=name;$('#auth').style.display='none';$('#app').style.display='flex';renderMe();listen();renderList();setTimeout(()=>{if(!friendsLoaded){friendsLoaded=true;renderList()}},8000);
  const beat=()=>setDoc(doc(db,'presence',uid),{t:Date.now()},{merge:true});beat();setInterval(()=>{beat();renderList();head()},20000);
  onSnapshot(doc(db,'presence',uid),p=>{if(p.exists()){const v=p.data();if(v.av)avs[uid]=v.av;cols[uid]=v.col||'';renderMe();renderMsgs()}});
  onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{
@@ -403,7 +428,7 @@ function start(id,name){
     if(ch.type!=='added')return;const x=ch.doc.data();last[o]=x;
     if(x.from!==uid&&x.ts>boot){if(cur===o&&!document.hidden)snd.recv();else{unread[o]=(unread[o]||0)+1;snd.recv();updTitle()}}
     renderList()}))});
-  renderList();head();{const rd=(friends.get(cur)||{}).read||0;if(rd!==prevRd){prevRd=rd;renderMsgs()}}});
+  friendsLoaded=true;renderList();head();{const rd=(friends.get(cur)||{}).read||0;if(rd!==prevRd){prevRd=rd;renderMsgs()}}});
  onSnapshot(collection(db,'users',uid,'signals'),s=>s.docChanges().forEach(ch=>{
   if(ch.type!=='added')return;const x=ch.doc.data();deleteDoc(ch.doc.ref);
   if(Date.now()-x.ts<30000)onSig(x.from,JSON.parse(x.d))}));
@@ -412,7 +437,7 @@ document.addEventListener('visibilitychange',()=>{markRead();if(!document.hidden
 
 /* ---- чаты ---- */
 function renderList(){
- const L=$('#list');L.textContent='';if(!friends.size)L.append(el('div','empty','Пока нет друзей'));
+ const L=$('#list');L.textContent='';if(!friendsLoaded){skRows(L,7);return}if(!friends.size)L.append(el('div','empty','Пока нет друзей'));
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
@@ -422,13 +447,13 @@ function renderList(){
 function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает…':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
- cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;renderMsgs();unMsgs&&unMsgs();
- unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());renderMsgs();markRead()});
+ cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
+ unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());msgLoading=false;renderMsgs();markRead()});
 }
 function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
  return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
 function renderMsgs(){
- const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';B.textContent='';if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
+ const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';B.textContent='';if(msgLoading){skMsgs(B);return}if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
  let lastDay='';
  msgs.forEach((m,i)=>{const dk=new Date(m.ts).toDateString();if(dk!==lastDay){lastDay=dk;B.append(dayLabel(m.ts))}
   const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
@@ -467,7 +492,7 @@ function listen(){
  onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
- onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());renderMsgs()});
+ onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());catLoaded=true;renderMsgs();tryRe()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
  onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0;updBal()});
  onSnapshot(doc(db,'trolls',uid),s=>{if(!s.exists())return;const x=s.data();if(x.ts===lastTroll||Date.now()-x.ts>15000)return;lastTroll=x.ts;if(trollOn)runTroll(x)});
@@ -476,7 +501,7 @@ function listen(){
   s.docChanges().forEach(ch=>{const g=ch.doc.data(),id=ch.doc.id,was=allG[id]&&allG[id].owner;
    if(ch.type==='removed')delete allG[id];else{allG[id]=g;maxN[g.type]=Math.max(maxN[g.type]||0,g.n||0)}
    if(!first&&ch.type!=='removed'&&g.owner===uid&&was!==uid)gotGift(g)});
-  myGifts=Object.entries(allG).filter(([,g])=>g.owner===uid).map(([id,g])=>({...g,id}));first=false});
+  myGifts=Object.entries(allG).filter(([,g])=>g.owner===uid).map(([id,g])=>({...g,id}));first=false;giftsLoaded=true;tryRe()});
 }
 function gotGift(g){
  const c=cat[g.type]||{};snd.recv();
@@ -530,6 +555,7 @@ async function buy(id){
   b.update(doc(db,'wallets',uid),{coins:bal-c.price,buying:gid});await b.commit();mod.style.display='none'}
  catch(e){toast('Не удалось купить (возможно, кто-то успел раньше)')}}
 function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',c=>{
+ if(!catLoaded||!giftsLoaded){modRe=openShop;sec(c,'Загружаю подарки…');const sg=el('div','grid');skFill(sg,6);c.append(sg);return}
  sec(c,'NFT-подарки в продаже');const g=el('div','grid');
  Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
   g.append(giftEl({type:id},()=>buy(id),'🪙 '+x.price+(left!=null?' · осталось '+left+'/'+x.supply:'')))});
@@ -539,7 +565,7 @@ function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',
  c.append(el('div','sub','Коски выдаёт админ. Настоящих денег в Egor нет.'))})}
 const mod=$('#mod'),card=mod.firstElementChild;
 mod.onclick=e=>{if(e.target===mod)mod.style.display='none'};
-function openMod(title,fill,wide){card.classList.toggle('wide',!!wide);card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
+function openMod(title,fill,wide){modRe=null;card.classList.toggle('wide',!!wide);card.textContent='';const h=el('div','mh');h.append(el('b','',title));const x=el('button','','✕');x.onclick=()=>mod.style.display='none';h.append(x);card.append(h);fill(card);mod.style.display='grid'}
 const sec=(c,t)=>c.append(el('div','sec',t));
 function toast(t){const d=el('div','toast',t);document.body.append(d);setTimeout(()=>d.remove(),3500)}
 function giftEl(g,onclick,sub){
@@ -566,8 +592,8 @@ function openGifts(){
   sec(c,'Мои NFT-подарки — передать @'+fn);const g2=el('div','grid');
   myGifts.forEach(g=>g2.append(giftEl(g,()=>{if(confirm('Подарить «'+(cat[g.type]||{}).name+'»'+(g.n?' №'+g.n:'')+' пользователю @'+fn+'? Вернуть нельзя.')){transfer(g,to);mod.style.display='none'}})));
   if(!g2.children.length)g2.append(el('div','sub','У тебя пока нет подарков'));c.append(g2);
-  sec(c,'Коллекция @'+fn);const g3=el('div','grid');c.append(g3);
-  (await getDocs(query(collection(db,'gifts'),where('owner','==',to)))).docs.forEach(d=>g3.append(giftEl(d.data())));
+  sec(c,'Коллекция @'+fn);const g3=el('div','grid');c.append(g3);skFill(g3,4);
+  {const dd=(await getDocs(query(collection(db,'gifts'),where('owner','==',to)))).docs;g3.textContent='';dd.forEach(d=>g3.append(giftEl(d.data())))}
   if(!g3.children.length)g3.append(el('div','sub','Пусто'))})}
 function openMine(){openMod('🎒 Мои подарки ('+myGifts.length+')',c=>{const g=el('div','grid');myGifts.forEach(x=>g.append(giftEl(x)));
  if(!myGifts.length)g.append(el('div','sub','Пока пусто. Подарки появятся, когда друзья или админ их тебе подарят.'));c.append(g)})}
@@ -697,6 +723,11 @@ $('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>cur&&openProfile(cur)
 
 
 /* ---- казино и апгрейдер (только виртуальные коски) ---- */
+let friendsLoaded=false,msgLoading=false,catLoaded=false,giftsLoaded=false,modRe=null;
+function tryRe(){if(modRe&&catLoaded&&giftsLoaded&&mod.style.display==='grid'){const f=modRe;modRe=null;f()}}
+function skFill(p,n){for(let i=0;i<n;i++)p.append(el('div','sk sk-g'))}
+function skRows(p,n){const W=[[52,78],[40,66],[58,72],[46,84],[50,60],[38,74],[55,70]];for(let i=0;i<n;i++){const r=el('div','sk-row'),l=el('div','sk-l'),a=el('div','sk'),b=el('div','sk');a.style.width=W[i%7][0]+'%';b.style.width=W[i%7][1]+'%';l.append(a,b);r.append(el('div','sk sk-av'),l);p.append(r)}}
+function skMsgs(B){[[38,0],[26,1],[48,0],[32,1],[42,0],[28,1]].forEach(([w,r])=>{const b=el('div','sk sk-b');b.style.width=w+'%';b.style.alignSelf=r?'flex-end':'flex-start';B.append(b)})}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const updBal=()=>{const e=document.getElementById('cbal');if(e)e.textContent=bal};
 async function freshBal(){const w=await getDoc(doc(db,'wallets',uid));bal=w.exists()?(w.data().coins||0):0;updBal();return bal}
