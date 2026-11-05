@@ -15,9 +15,20 @@ service cloud.firestore {
         || exists(/databases/$(database)/documents/friendships/$(b + '_' + a));
     }
 
+    // какой предмет выпадает из кейса при данном значении roll (0..999)
+    function caseSlot(caseId, roll, type) {
+      let c = get(/databases/$(database)/documents/cases/$(caseId)).data;
+      return (roll < c.c0 && type == c.t0) || (roll >= c.c0 && roll < c.c1 && type == c.t1) || (roll >= c.c1 && roll < c.c2 && type == c.t2) || (roll >= c.c2 && roll < c.c3 && type == c.t3) || (roll >= c.c3 && roll < c.c4 && type == c.t4) || (roll >= c.c4 && roll < c.c5 && type == c.t5) || (roll >= c.c5 && roll < c.c6 && type == c.t6) || (roll >= c.c6 && roll < c.c7 && type == c.t7);
+    }
+
     // админы создаются ТОЛЬКО вручную в консоли Firebase
     match /admins/{id} {
       allow read: if request.auth != null && request.auth.uid == id;
+    }
+
+    match /cases/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // каталог подарков и подписки: меняет только админ
@@ -69,7 +80,20 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/gifts/$(get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.inGift)).data.lastBet == request.resource.data.bet
         && request.resource.data.n >= 1
         && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply == 0
-            || request.resource.data.n <= get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply));
+            || request.resource.data.n <= get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply)) || (
+        // подарок из кейса: исход считается по серверному времени ставки
+        request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.fromUid == 'case'
+        && request.resource.data.bet is string
+        && gid == 'c' + request.resource.data.bet
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.kind == 'case'
+        && get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.bet == request.resource.data.bet
+        && request.resource.data.n >= 1
+        && caseSlot(get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.caseId,
+                    get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.t.toMillis() % 1000,
+                    request.resource.data.type));
       allow update: if isAdmin() || (
         request.auth != null
         && resource.data.owner == request.auth.uid
@@ -86,7 +110,16 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet))
         && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.uid == request.auth.uid
         && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.kind == 'upgrade'
-        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.inGift == gid);
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.lastBet)).data.inGift == gid) || (
+        // продажа подарка за коски (кошелёк пополняется в той же записи)
+        request.auth != null
+        && resource.data.owner == request.auth.uid
+        && request.resource.data.owner == 'house'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['owner', 'soldFor'])
+        && request.resource.data.soldFor >= 1
+        && request.resource.data.soldFor * 10 <= get(/databases/$(database)/documents/catalog/$(resource.data.type)).data.price * 7
+        && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.sold == gid
+        && getAfter(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins == get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.coins + request.resource.data.soldFor);
       allow delete: if isAdmin();
     }
 
@@ -127,6 +160,15 @@ service cloud.firestore {
         && resource.data.bet == request.resource.data.claim
         && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 100) < get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.chance
         && request.resource.data.coins == resource.data.coins + get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.payout;
+
+      // зачисление коски за проданный подарок
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'sold'])
+        && request.resource.data.sold is string
+        && get(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.owner == request.auth.uid
+        && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.owner == 'house'
+        && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.soldFor >= 1
+        && request.resource.data.coins == resource.data.coins + getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.soldFor;
     }
 
     // приколы: пишет только админ, читает только адресат
@@ -173,6 +215,11 @@ service cloud.firestore {
             && request.resource.data.target == get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.price
             && get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.free == false
             && request.resource.data.chance * request.resource.data.target <= 95 * request.resource.data.stake)
+          ||
+          (request.resource.data.kind == 'case'
+            && request.resource.data.payout == 0
+            && request.resource.data.debit == request.resource.data.stake
+            && request.resource.data.stake == get(/databases/$(database)/documents/cases/$(request.resource.data.caseId)).data.price)
         );
       allow update: if request.auth != null && resource.data.uid == request.auth.uid
         && resource.data.claimed == false && request.resource.data.claimed == true

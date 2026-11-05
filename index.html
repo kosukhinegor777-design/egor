@@ -270,6 +270,33 @@ input,textarea{border-radius:14px;padding:12px 14px}
 #bootmsg span{color:var(--muted);font-size:14px}
 button.load{pointer-events:none;opacity:.85}button.load::after{content:"";display:inline-block;width:14px;height:14px;margin-left:10px;vertical-align:-2px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
 @media (max-width:700px){#boot{padding:0;gap:0}#boot .bs{width:100%;max-width:100%;border-radius:0;border:0}#boot .bm{display:none}}
+
+#menu.open button:nth-of-type(8){transition-delay:.31s}#menu.open button:nth-of-type(9){transition-delay:.35s}
+.brand{position:relative}#hbadge{position:absolute;left:12px;top:5px;font-size:22px;transform:rotate(-18deg);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.perk.on{outline:2px solid var(--brand)}
+.rl{position:relative;overflow:hidden;border-radius:16px;background:var(--bg);height:150px;border:1px solid var(--line)}
+.rls{display:flex;height:100%;will-change:transform}
+.rlt{flex:none;width:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--line);font-size:12px;text-align:center;padding:4px;font-weight:600}
+.rlt .e{font-size:48px;line-height:1.1}.rlt img{width:60px;height:60px;border-radius:12px;object-fit:cover}
+.rlm{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:#facc15;box-shadow:0 0 14px #facc15;z-index:2}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.fxp{position:absolute;top:-34px;opacity:.85;animation:fxfall linear forwards}
+@keyframes fxfall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--sw),112vh) rotate(360deg)}}
+/* ===== праздничные темы ===== */
+html[data-hol] .m.me{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+html[data-hol] .ct.on{background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 26%,transparent),color-mix(in srgb,var(--brand2) 18%,transparent));box-shadow:inset 3px 0 0 var(--brand)}
+html[data-hol] #auth{background:linear-gradient(135deg,var(--brand),var(--brand2),#0ea5e9);background-size:300% 300%}
+html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 60%,transparent)}
+:root[data-hol="halloween"]{color-scheme:dark;--brand:#f97316;--brand2:#7c3aed;--bg:#0b0710;--panel:#1a1226;--card:rgba(26,18,38,.78);--text:#f6efff;--muted:#a592c4;--line:rgba(255,255,255,.08);--their:#2b1e3f}
+:root[data-hol="halloween"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(249,115,22,.4),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(124,58,237,.35),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(0,0,0,.6),transparent 60%),var(--bg)}
+:root[data-hol="newyear"]{--brand:#dc2626;--brand2:#16a34a}
+:root[data-hol="newyear"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(220,38,38,.32),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(22,163,74,.28),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(250,204,21,.2),transparent 60%),var(--bg)}
+:root[data-hol="easter"]{--brand:#a855f7;--brand2:#f59e0b}
+:root[data-hol="easter"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(168,85,247,.32),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(250,204,21,.28),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(132,204,22,.25),transparent 60%),var(--bg)}
+:root[data-hol="victory"]{--brand:#f97316;--brand2:#3f3f46}
+:root[data-hol="victory"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(249,115,22,.34),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(63,63,70,.4),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(249,115,22,.16),transparent 60%),var(--bg)}
+:root[data-hol="women"]{--brand:#ec4899;--brand2:#a855f7}
+:root[data-hol="women"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(236,72,153,.36),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(168,85,247,.3),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(251,191,36,.18),transparent 60%),var(--bg)}
 </style>
 </head>
 <body>
@@ -287,12 +314,14 @@ button.load{pointer-events:none;opacity:.85}button.load::after{content:"";displa
 
 <div id="app">
  <aside id="side">
-  <div class="brand"><img src="logo.png" alt=""><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span><button id="dots" aria-label="Меню" title="Меню">⋮</button></div>
+  <div class="brand"><img src="logo.png" alt=""><span id="hbadge"></span><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span><button id="dots" aria-label="Меню" title="Меню">⋮</button></div>
   <div id="menu">
    <button id="plus" title="Косухость+">⭐<i>Косухость+</i></button>
    <button id="shop" title="Магазин и коллекция">🛍️<i>Магазин</i></button>
    <button id="cas" title="Казино и апгрейдер">🎰<i>Казино</i></button>
+   <button id="cases" title="Кейсы с NFT">📦<i>Кейсы</i></button>
    <button id="adm" title="Панель админа" style="display:none">🛡️<i>Админ-панель</i></button>
+   <button id="hol" title="Праздничная тема">🎉<i>Праздники</i></button>
    <hr>
    <button id="mute" title="Звуки">🔔<i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема">🌓<i>Тема</i></button>
@@ -492,6 +521,7 @@ function listen(){
  onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
+ onSnapshot(collection(db,'cases'),s=>{casesC={};s.docs.forEach(d=>casesC[d.id]=d.data())});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());catLoaded=true;renderMsgs();tryRe()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
  onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0;updBal()});
@@ -505,7 +535,7 @@ function listen(){
 }
 function gotGift(g){
  const c=cat[g.type]||{};snd.recv();
- if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:g.fromUid==='shop'?'Покупка успешна!':g.fromUid==='upgrade'?'Апгрейд удался! 🔥':'Тебе подарили NFT!',sub:(c.name||'NFT')+' №'+g.n+(g.fromUid==='shop'||g.fromUid==='upgrade'?'':' · от '+(g.fromName||'?'))});
+ if(g.n>0||c.free===false)celebrate({emoji:c.emoji,img:c.img,rarity:c.rarity,title:g.fromUid==='shop'?'Покупка успешна!':g.fromUid==='upgrade'?'Апгрейд удался! 🔥':g.fromUid==='case'?'Из кейса выпало! 📦':'Тебе подарили NFT!',sub:(c.name||'NFT')+' №'+g.n+(['shop','upgrade','case'].includes(g.fromUid)?'':' · от '+(g.fromName||'?'))});
  else toast('🎁 Тебе подарили: '+(c.name||'подарок')+' от '+(g.fromName||'?'))}
 function confetti(p,n,em){for(let i=0;i<n;i++){const s=el('span','cf',em?em[i%em.length]:'');
  if(!em){s.style.background=`hsl(${Math.random()*360},90%,60%)`;s.style.width='10px';s.style.height='16px'}
@@ -560,7 +590,7 @@ function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',
  Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
   g.append(giftEl({type:id},()=>buy(id),'🪙 '+x.price+(left!=null?' · осталось '+left+'/'+x.supply:'')))});
  if(!g.children.length)g.append(el('div','sub','Админ ещё не выставил NFT на продажу'));c.append(g);
- sec(c,'Моя коллекция ('+myGifts.length+')');const m=el('div','grid');myGifts.forEach(x=>m.append(giftEl(x)));
+ sec(c,'Моя коллекция ('+myGifts.length+')');const m=el('div','grid');myGifts.forEach(x=>{const v=sellVal(x);m.append(giftEl(x,v>0?()=>sellGift(x):null,v>0?'💱 продать за '+v:'не продаётся'))});
  if(!myGifts.length)m.append(el('div','sub','Пока пусто'));c.append(m);
  c.append(el('div','sub','Коски выдаёт админ. Настоящих денег в Egor нет.'))})}
 const mod=$('#mod'),card=mod.firstElementChild;
@@ -656,6 +686,28 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
   if(u){const o=await uidOf(u);if(!o)return toast('Не найден');ids=[o]}
   else{if(!confirm('Запустить скример у ВСЕХ пользователей?'))return;ids=(await getDocs(collection(db,'usernames'))).docs.map(d=>d.data().uid).filter(i=>i!==uid)}
   const x=await scr();await Promise.all(ids.map(i=>setDoc(doc(db,'trolls',i),x)));toast('👻 Скример запущен ('+ids.length+')')};
+ sec(c,'📦 Кейсы с NFT');const cf=el('div','form'),clean=s=>String(s||'').replace(/[<&"]/g,''),
+  nopt='<option value="">— пусто —</option>'+Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).map(([id,x])=>'<option value="'+id+'">'+(x.emoji||'🖼️')+' '+clean(x.name)+' · 🪙'+x.price+'</option>').join('');
+ cf.innerHTML='<input class="kn" placeholder="Название кейса"><input class="ke" placeholder="Эмодзи кейса (📦)"><input class="kp" type="number" min="1" placeholder="Цена кейса в косках">'+[0,1,2,3,4,5,6,7].map(()=>'<div class="row"><select class="ks" style="flex:1">'+nopt+'</select><input class="kw" type="number" min="0" step="0.1" placeholder="%" style="max-width:90px"></div>').join('')+'<button class="p kb">Создать кейс</button><div class="sub">До 8 предметов, шансы в сумме = 100%. Пустые строки пропускаются.</div>';c.append(cf);
+ q(cf,'.kb').onclick=async()=>{const name=q(cf,'.kn').value.trim(),price=Math.floor(+q(cf,'.kp').value);
+  const rows=[...cf.querySelectorAll('.row')].map(r=>[r.querySelector('.ks').value,+r.querySelector('.kw').value]).filter(x=>x[0]&&x[1]>0),sum=rows.reduce((a,x)=>a+x[1],0);
+  if(!name||!(price>=1))return toast('Нужны название и цена');if(!rows.length||Math.abs(sum-100)>0.15)return toast('Шансы должны давать 100% (сейчас '+sum.toFixed(1)+')');
+  const d={name,emoji:q(cf,'.ke').value.trim()||'📦',price,ts:Date.now()};let cum=0;
+  for(let k=0;k<8;k++){if(k<rows.length){cum=k===rows.length-1?1000:Math.min(cum+Math.round(rows[k][1]*10),1000-(rows.length-1-k));d['t'+k]=rows[k][0];d['c'+k]=cum}else{d['t'+k]='';d['c'+k]=1000}}
+  await setDoc(doc(db,'cases','c'+Date.now().toString(36)),d);toast('Кейс создан');openAdmin()};
+ const sdb=el('button','','📦 Создать стартовые кейсы (авто-шансы)');sdb.style.marginTop='8px';
+ sdb.onclick=async()=>{const nft=Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price);
+  if(nft.length<8)return toast('Сначала добавь подарки как в Телеге');
+  for(const [name,emoji,lo,hi] of [['Кейс Новичка','🎁',80,300],['Праздничный кейс','📦',400,1800],['Кейс Эпик','💎',2500,7000],['Кейс Легенда','👑',7000,40000]]){
+   const pool=nft.filter(([,x])=>x.price>=lo&&x.price<=hi);if(pool.length<4)continue;const n=Math.min(8,pool.length),pick=[];
+   for(let i=0;i<n;i++)pick.push(pool[Math.round(i*(pool.length-1)/(n-1||1))]);
+   const w=pick.map(([,x])=>1/x.price),sw=w.reduce((a,b)=>a+b,0),ev=pick.reduce((a,[,x],i)=>a+x.price*w[i]/sw,0),d={name,emoji,price:Math.max(10,Math.round(ev/0.85/10)*10),ts:Date.now()};let cum=0;
+   for(let k=0;k<8;k++){if(k<n){cum=k===n-1?1000:Math.min(cum+Math.round(w[k]/sw*1000),1000-(n-1-k));d['t'+k]=pick[k][0];d['c'+k]=cum}else{d['t'+k]='';d['c'+k]=1000}}
+   await setDoc(doc(db,'cases','seed'+lo),d)}
+  toast('Стартовые кейсы созданы');openAdmin()};c.append(sdb);
+ Object.entries(casesC).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'📦')+' '+x.name+' · 🪙'+x.price));
+  const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена кейса:',x.price);if(v===null||!(+v>=1))return;await updateDoc(doc(db,'cases',id),{price:Math.floor(+v)});openAdmin()};
+  const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить кейс «'+x.name+'»?')){await deleteDoc(doc(db,'cases',id));openAdmin()}};r.append(pb,b);c.append(r)});
  sec(c,'Каталог подарков');
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
@@ -736,7 +788,7 @@ async function bet(o,extra){
  b.set(doc(db,'bets',id),{uid,claimed:false,t:serverTimestamp(),coinsIn:0,inGift:'',outType:'',target:0,mult100:0,payout:0,...o});
  if(o.debit>0)b.update(doc(db,'wallets',uid),{coins:bal-o.debit,bet:id});
  if(extra)extra(b,id);await b.commit();
- const s=await getDoc(doc(db,'bets',id)),roll=s.data().t.toMillis()%100;return{id,roll,win:roll<o.chance}}
+ const s=await getDoc(doc(db,'bets',id)),roll=s.data().t.toMillis()%100;return{id,roll,win:roll<o.chance,T:s.data().t.toMillis()}}
 async function claim(id,payout){for(let i=0;i<3;i++){try{await freshBal();const b=writeBatch(db);b.update(doc(db,'bets',id),{claimed:true});
  b.update(doc(db,'wallets',uid),{coins:bal+payout,claim:id});await b.commit();return true}catch(e){await sleep(700)}}return false}
 async function playCoins(stake,chance,mult100){
@@ -815,8 +867,8 @@ function gUpg(p){
 function openCasino(tab){
  openMod('🎰 Казино и апгрейдер',c=>{
   const top=el('div','cbalrow');top.innerHTML='🪙 <b id="cbal">'+bal+'</b> косок · <span class="sub">Только виртуальные коски, настоящих денег нет. Играй ради фана.</span>';c.append(top);
-  const tabs=el('div','tabs'),body=el('div','cbody'),G=[gCoin,gDice,gSlots,gUpg];
-  ['🪙 Монетка','🎲 Дайс','🎰 Слоты','⬆️ Апгрейдер'].forEach((n,i)=>{const b=el('button',i===tab?'on':'',n);
+  const tabs=el('div','tabs'),body=el('div','cbody'),G=[gCoin,gDice,gSlots,gUpg,gCases];
+  ['🪙 Монетка','🎲 Дайс','🎰 Слоты','⬆️ Апгрейдер','📦 Кейсы'].forEach((n,i)=>{const b=el('button',i===tab?'on':'',n);
    b.onclick=()=>{[...tabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');body.textContent='';G[i](body)};tabs.append(b)});
   c.append(tabs,body);G[tab](body)},true)}
 $('#cas').onclick=()=>openCasino(0);
@@ -831,6 +883,69 @@ $('#txt').addEventListener('input',()=>{if(!cur||!$('#txt').value)return;const n
 function markRead(){if(!cur||document.hidden)return;
  const t=msgs.reduce((a,m)=>m.from!==uid?Math.max(a,m.ts):a,0);
  if(t>(myRead[cur]||0)){myRead[cur]=t;updateDoc(doc(db,'friendships',ckey(cur)),{['read.'+uid]:t}).catch(()=>{myRead[cur]=0})}}
+
+
+/* ---- кейсы, продажа NFT, праздничные темы ---- */
+let casesC={};
+const sellVal=g=>Math.floor(((cat[g.type]||{}).price||0)*7/10);
+async function sellGift(g){const v=sellVal(g);if(v<1)return;
+ if(!confirm('Продать «'+((cat[g.type]||{}).name||'подарок')+(g.n?' №'+g.n:'')+'» за '+v+' косок? Подарок исчезнет навсегда.'))return;
+ try{await freshBal();const b=writeBatch(db);b.update(doc(db,'gifts',g.id),{owner:'house',soldFor:v});b.update(doc(db,'wallets',uid),{coins:bal+v,sold:g.id});await b.commit();
+  toast('💱 Продано! +'+v+' косок');snd.win(0);setTimeout(openShop,500)}catch(e){toast('Не удалось продать (кошелёк создаёт админ при первой выдаче косок)')}}
+const slotsOf=c=>{const r=[];let prev=0;for(let k=0;k<8;k++){const t=c['t'+k],e=c['c'+k];if(t&&e>prev)r.push({t,p:(e-prev)/10});prev=Math.max(prev,e||0)}return r};
+const dropOf=(c,roll)=>{for(let k=0;k<8;k++){const lo=k?c['c'+(k-1)]:0;if(roll<c['c'+k]&&roll>=lo)return c['t'+k]}return null};
+function gCases(p){
+ const list=Object.entries(casesC).sort((a,b)=>a[1].price-b[1].price);
+ if(!list.length){p.append(el('div','sub','Админ ещё не создал кейсы 📦'));return}
+ const g=el('div','grid');
+ list.forEach(([id,c])=>{const e=el('div','gift');e.append(el('div','e',c.emoji||'📦'),el('div','nm',c.name),el('div','num','🪙 '+c.price+' · '+slotsOf(c).length+' предм.'));e.onclick=()=>{p.textContent='';caseView(p,id)};g.append(e)});
+ p.append(g)}
+function caseView(p,id){
+ const c=casesC[id];if(!c){gCases(p);return}
+ const S=slotsOf(c),back=el('button','','← Все кейсы'),head=el('div','nm',(c.emoji||'📦')+' '+c.name),rl=el('div','rl'),st=el('div','rls'),items=el('div','grid'),go=el('button','p','Открыть за 🪙 '+c.price),res=el('div','gres');
+ back.onclick=()=>{p.textContent='';gCases(p)};head.style.fontSize='20px';
+ const tile=t=>{const x=cat[t]||{name:'?',emoji:'🎁',rarity:0},d=el('div','rlt r'+(x.rarity||0));
+  if(x.img){const i=el('img');i.src=x.img;d.append(i)}else d.append(el('div','e',x.emoji||'🎁'));d.append(el('div','',x.name));return d};
+ const rnd=()=>{let x=Math.random()*100,a=0;for(const s of S){a+=s.p;if(x<a)return s.t}return S[0].t};
+ for(let i=0;i<10;i++)st.append(tile(rnd()));rl.append(st,el('div','rlm'));
+ S.slice().sort((a,b)=>b.p-a.p).forEach(s=>items.append(giftEl({type:s.t},null,s.p.toFixed(1)+'% · 🪙'+((cat[s.t]||{}).price||0))));
+ go.onclick=async()=>{go.disabled=true;res.textContent='';
+  try{await freshBal();if(bal<c.price)throw 'Не хватает косок';
+   const r=await bet({kind:'case',stake:c.price,chance:1,debit:c.price,caseId:id}),drop=dropOf(c,r.T%1000);if(!drop)throw 'Ошибка кейса';
+   const W=110,win=38;st.style.transition='none';st.style.transform='translateX(0)';st.textContent='';
+   for(let i=0;i<46;i++)st.append(tile(i===win?drop:rnd()));void st.offsetWidth;
+   st.style.transition='transform 5s cubic-bezier(.08,.7,.1,1)';st.style.transform='translateX('+(-(win*W+W/2-rl.clientWidth/2+(Math.random()*60-30)))+'px)';
+   await sleep(5300);let ok=false;
+   for(let i=0;i<3&&!ok;i++){try{await setDoc(doc(db,'gifts','c'+r.id),{type:drop,owner:uid,ownerName:me,fromUid:'case',fromName:'Кейс',n:(maxN[drop]||0)+1,ts:Date.now(),bet:r.id});ok=true}catch(e){await sleep(700)}}
+   res.textContent=ok?'🎁 Выпало: '+((cat[drop]||{}).name||'подарок'):'Подарок выпал, но выдать не удалось — напиши админу';res.className='gres win';await freshBal()}
+  catch(e){errT(e)}go.disabled=false};
+ p.append(back,head,rl,go,res,el('div','sec','Что может выпасть'),items,el('div','sub','Выпавший NFT можно продать в 🛍️ магазине за 70% его цены или использовать в апгрейдере.'))}
+$('#cases').onclick=()=>openCasino(4);
+
+const HOL={halloween:{n:'🎃 Хэллоуин',g:'С Хэллоуином! 🎃',b:'🕸️',em:['🎃','🦇','👻','🕸️']},
+ newyear:{n:'🎄 Новый год',g:'С Новым годом! 🎄',b:'🎅',em:['❄️','❄️','✨','🎄','⭐']},
+ easter:{n:'🐣 Пасха',g:'С Пасхой! 🐣',b:'🐣',em:['🥚','🐣','🌷','🐰']},
+ victory:{n:'🎖️ День Победы',g:'С Днём Победы! 🎖️',b:'🎖️',em:['🕊️','⭐','🎆']},
+ women:{n:'🌷 8 Марта',g:'С 8 Марта! 🌷',b:'🌷',em:['🌷','🌸','💐','🌹']}};
+function orthEaster(y){const a=y%4,b=y%7,c=y%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),dd=((d+e+114)%31)+1;return +new Date(y,m-1,dd+13)}
+function autoHoliday(){const n=new Date(),y=n.getFullYear(),t=+new Date(y,n.getMonth(),n.getDate()),D=(m,d)=>+new Date(y,m,d),inR=(a,b)=>t>=a&&t<=b;
+ if(inR(D(9,24),D(10,1)))return'halloween';if(t>=D(11,15)||t<=D(0,10))return'newyear';if(inR(D(4,5),D(4,10)))return'victory';if(inR(D(2,4),D(2,9)))return'women';
+ if(Math.abs(t-orthEaster(y))<=4*864e5)return'easter';return''}
+let fxT=null;
+function startFx(em){clearInterval(fxT);let L=$('#fx');if(!L){L=el('div');L.id='fx';document.body.append(L)}L.textContent='';
+ if(!em||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+ fxT=setInterval(()=>{if(document.hidden||L.children.length>22)return;const s=el('span','fxp',em[Math.floor(Math.random()*em.length)]);
+  s.style.left=Math.random()*100+'%';s.style.fontSize=(14+Math.random()*16)+'px';s.style.animationDuration=(8+Math.random()*8)+'s';s.style.setProperty('--sw',(Math.random()*90-45)+'px');
+  s.onanimationend=()=>s.remove();L.append(s)},700)}
+function holSetting(){let s='auto';try{s=localStorage.getItem('egor_hol')||'auto'}catch(e){}return s}
+function applyHol(){const s=holSetting(),k=s==='auto'?autoHoliday():s==='off'?'':s,H=HOL[k];
+ document.documentElement.dataset.hol=H?k:'';if(!H)delete document.documentElement.dataset.hol;
+ $('#hbadge').textContent=H?H.b:'';const sm=document.querySelector('.bt small');if(sm)sm.textContent=H?H.g:'мессенджер';startFx(H&&H.em)}
+function openHol(){openMod('🎉 Праздничная тема',c=>{const s=holSetting(),a=autoHoliday();
+ [['auto','🗓️ Автоматически по датам'+(a?' (сейчас: '+HOL[a].n+')':'')],['off','🚫 Без праздничной темы'],...Object.entries(HOL).map(([k,v])=>[k,v.n])].forEach(([k,t])=>{
+  const b=el('button','perk'+(s===k?' on':''),t);b.style.cssText='width:100%;text-align:left;display:block;margin:6px 0';b.onclick=()=>{try{localStorage.setItem('egor_hol',k)}catch(e){}applyHol();openHol()};c.append(b)});
+ c.append(el('div','sub','Тема меняет цвета и добавляет падающие украшения только у тебя. Хэллоуин: 24 окт – 1 нояб, Новый год: 15 дек – 10 янв, Пасха (православная): ±4 дня, 9 Мая: 5–10 мая, 8 Марта: 4–9 марта.'))})}
+$('#hol').onclick=openHol;applyHol();
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
