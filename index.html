@@ -297,6 +297,35 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 :root[data-hol="victory"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(249,115,22,.34),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(63,63,70,.4),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(249,115,22,.16),transparent 60%),var(--bg)}
 :root[data-hol="women"]{--brand:#ec4899;--brand2:#a855f7}
 :root[data-hol="women"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(236,72,153,.36),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(168,85,247,.3),transparent 55%),radial-gradient(900px 600px at 50% 115%,rgba(251,191,36,.18),transparent 60%),var(--bg)}
+
+/* ===== polish v2 ===== */
+.mi{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex:none;background:color-mix(in srgb,var(--c) 22%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 42%,transparent);font-style:normal}
+#menu button{padding:9px 12px}
+.sub.typ::after{content:"...";display:inline-block;width:0;overflow:hidden;vertical-align:bottom;animation:dd 1.2s steps(4) infinite}@keyframes dd{to{width:1.15em}}
+#txt:not(:placeholder-shown)~#send{transform:scale(1.1);box-shadow:0 8px 24px rgba(99,102,241,.6)}
+#send{transition:transform .2s cubic-bezier(.2,1.4,.4,1),box-shadow .2s}
+#mod .card{background:linear-gradient(180deg,color-mix(in srgb,var(--brand) 12%,var(--panel)),var(--panel) 140px)}
+.gift{position:relative;overflow:hidden}
+.gift.r1{border-color:rgba(59,130,246,.55)}.gift.r2{border-color:rgba(168,85,247,.7)}.gift.r3{border-color:rgba(245,158,11,.85);box-shadow:0 0 18px rgba(245,158,11,.25)}
+.gift.r3::after,.gift.r2::after{content:"";position:absolute;inset:-60%;pointer-events:none;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.28) 50%,transparent 58%);animation:sheen 3.6s ease-in-out infinite}
+.gift.r2::after{animation-duration:5s;opacity:.6}
+@keyframes sheen{0%{transform:translateX(-70%)}60%,100%{transform:translateX(70%)}}
+.tabs{overflow-x:auto;scrollbar-width:none}.tabs button{white-space:nowrap;padding:10px 14px}
+#auth{position:relative;overflow:hidden}
+#auth::before,#auth::after{content:"";position:absolute;width:440px;height:440px;border-radius:50%;filter:blur(70px);opacity:.5;animation:orb 14s ease-in-out infinite alternate;pointer-events:none}
+#auth::before{background:#22d3ee;left:-130px;top:-110px}#auth::after{background:#ec4899;right:-150px;bottom:-130px;animation-delay:-7s}
+@keyframes orb{to{transform:translate(90px,60px) scale(1.25)}}#auth .box{position:relative;z-index:1}
+.reel{background:linear-gradient(180deg,var(--bg),var(--their));box-shadow:inset 0 5px 16px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.2)}
+.coin{filter:drop-shadow(0 12px 22px rgba(250,204,21,.45))}
+.dnum{background:linear-gradient(135deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.gres{font-size:20px}
+.upp{background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%),var(--bg);border:1px solid var(--line);border-radius:20px}
+.wheel{width:290px;height:290px;filter:drop-shadow(0 10px 30px rgba(250,204,21,.18))}
+.upc .p{background:linear-gradient(135deg,#facc15,#f59e0b);color:#1a1200;box-shadow:0 10px 28px rgba(250,204,21,.45);font-size:18px;padding:15px 30px;border-radius:18px;width:100%}
+.upc .p:disabled{filter:grayscale(.7);opacity:.55;box-shadow:none}
+.upp input[type=range]{width:100%;accent-color:#facc15}
+.gift.sel{outline:3px solid #facc15;box-shadow:0 0 22px rgba(250,204,21,.45)}
+.pct{text-shadow:0 0 24px currentColor}
 </style>
 </head>
 <body>
@@ -316,16 +345,16 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
  <aside id="side">
   <div class="brand"><img src="logo.png" alt=""><span id="hbadge"></span><span class="bt">Egor<small>мессенджер</small></span><span id="meav" title="Мой профиль"></span><button id="dots" aria-label="Меню" title="Меню">⋮</button></div>
   <div id="menu">
-   <button id="plus" title="Косухость+">⭐<i>Косухость+</i></button>
-   <button id="shop" title="Магазин и коллекция">🛍️<i>Магазин</i></button>
-   <button id="cas" title="Казино и апгрейдер">🎰<i>Казино</i></button>
-   <button id="cases" title="Кейсы с NFT">📦<i>Кейсы</i></button>
-   <button id="adm" title="Панель админа" style="display:none">🛡️<i>Админ-панель</i></button>
-   <button id="hol" title="Праздничная тема">🎉<i>Праздники</i></button>
+   <button id="plus" title="Косухость+"><b class="mi" style="--c:#f59e0b">⭐</b><i>Косухость+</i></button>
+   <button id="shop" title="Магазин и коллекция"><b class="mi" style="--c:#ec4899">🛍️</b><i>Магазин</i></button>
+   <button id="cas" title="Казино и апгрейдер"><b class="mi" style="--c:#a855f7">🎰</b><i>Казино</i></button>
+   <button id="cases" title="Кейсы с NFT"><b class="mi" style="--c:#3b82f6">📦</b><i>Кейсы</i></button>
+   <button id="adm" title="Панель админа" style="display:none"><b class="mi" style="--c:#ef4444">🛡️</b><i>Админ-панель</i></button>
+   <button id="hol" title="Праздничная тема"><b class="mi" style="--c:#f97316">🎉</b><i>Праздники</i></button>
    <hr>
-   <button id="mute" title="Звуки">🔔<i>Звуки включены</i></button>
-   <button id="theme" title="Светлая / тёмная тема">🌓<i>Тема</i></button>
-   <button id="out" title="Выйти">⏻<i>Выйти</i></button>
+   <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
+   <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
+   <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -383,7 +412,7 @@ const snd={send:()=>{tone(660,0,.12,.1);tone(880,.07,.14,.1)},recv:()=>{tone(880
  ring:()=>{[0,.4].forEach(x=>{tone(740,x,.25,.22);tone(988,x+.12,.25,.22)})},back:()=>tone(440,0,.9,.08),end:()=>{tone(500,0,.15,.12);tone(330,.15,.3,.12)}};
 snd.win=r=>{[523,659,784,1047,...(r>=3?[1319,1568]:[])].forEach((f,i)=>tone(f,i*.11,.35,.16))};
 let ringT=null;const startRing=f=>{stopRing();f();ringT=setInterval(f,f===snd.ring?2200:3000)},stopRing=()=>{clearInterval(ringT);ringT=null};
-const setMute=()=>{$('#mute').innerHTML=(muted?'🔕':'🔔')+'<i>'+(muted?'Звуки выключены':'Звуки включены')+'</i>'};setMute();
+const setMute=()=>{$('#mute').innerHTML='<b class="mi" style="--c:#06b6d4">'+(muted?'🔕':'🔔')+'</b><i>'+(muted?'Звуки выключены':'Звуки включены')+'</i>'};setMute();
 $('#mute').onclick=()=>{muted=!muted;try{localStorage.setItem('egor_mute',muted?'1':'0')}catch(e){}setMute()};
 const updTitle=()=>{const n=Object.values(unread).reduce((a,b)=>a+b,0);document.title=(n?`(${n}) `:'')+'Egor'};
 
@@ -470,10 +499,10 @@ function renderList(){
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
-  const w=el('div','w');w.append((()=>{const n=el('div','nm');applyName(n,id,f.name);return n})(),(()=>{const t=isTyp(id);return el('div','sub'+(t?' typ':''),t?'печатает…':(prev(last[id])||(on?'в сети':'не в сети')))})());r.append(w);
+  const w=el('div','w');w.append((()=>{const n=el('div','nm');applyName(n,id,f.name);return n})(),(()=>{const t=isTyp(id);return el('div','sub'+(t?' typ':''),t?'печатает':(prev(last[id])||(on?'в сети':'не в сети')))})());r.append(w);
   if(unread[id])r.append(el('span','bd',unread[id]));r.onclick=()=>openChat(id);L.append(r)});
 }
-function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает…':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
+function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
  cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
@@ -838,13 +867,15 @@ function gUpg(p){
  const w=el('div','upg'),L=el('div','upp'),C=el('div','upc'),Rt=el('div','upp'),lg=el('div','grid'),rg=el('div','grid'),ci=document.createElement('input');
  ci.type='number';ci.min=0;ci.value=0;ci.placeholder='+ коски к ставке';
  const wheel=el('div','wheel');
- wheel.innerHTML='<svg viewBox="0 0 200 200"><defs><linearGradient id="ug" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="180"><stop offset="0" stop-color="#84cc16"/><stop offset=".55" stop-color="#facc15"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs><circle cx="100" cy="100" r="80" fill="none" stroke="#2a2a30" stroke-width="16"/><path class="arc" d="" fill="none" stroke="url(#ug)" stroke-width="16"/></svg><div class="aw"><div class="ar"></div></div><div class="pct">0%</div>';
+ wheel.innerHTML='<svg viewBox="0 0 200 200"><defs><linearGradient id="ug" gradientUnits="userSpaceOnUse" x1="0" y1="20" x2="0" y2="180"><stop offset="0" stop-color="#84cc16"/><stop offset=".55" stop-color="#facc15"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs><circle cx="100" cy="100" r="64" fill="rgba(0,0,0,.28)"/><circle cx="100" cy="100" r="92" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="5" stroke-dasharray="1.4 14.5"/><circle cx="100" cy="100" r="80" fill="none" stroke="rgba(120,120,150,.25)" stroke-width="16"/><path class="arc" d="" fill="none" stroke="url(#ug)" stroke-width="16"/></svg><div class="aw"><div class="ar"></div></div><div class="pct">0%</div>';
  const arc=wheel.querySelector('.arc'),aw=wheel.querySelector('.aw'),pct=wheel.querySelector('.pct'),info=el('div','sub'),go=el('button','p','⬆ Улучшить'),res=el('div','gres');
  const calc=()=>{const coins=Math.max(0,Math.floor(+ci.value||0)),stake=(sg?price(sg.type):0)+coins,tp=tid?price(tid):0;return{coins,stake,tp,ch:stake>0&&tp>stake?Math.min(95,Math.floor(95*stake/tp)):0}};
  const upd=()=>{const {stake,tp,ch}=calc();arc.setAttribute('d',arcPath(ch));pct.textContent=ch+'%';pct.style.color=ch>=60?'#84cc16':ch>=30?'#facc15':'#ef4444';
-  info.textContent=!sg?'Выбери свой подарок слева':!tid?'Выбери цель справа':ch<1?'Цель слишком дорогая для такой ставки (шанс меньше 1%)':'Ставка '+stake+' → цель '+tp+' · шанс '+ch+'%';
-  go.disabled=!(sg&&tid&&ch>=1);[...lg.children].forEach(x=>x.classList.toggle('sel',x._g===sg));[...rg.children].forEach(x=>x.classList.toggle('sel',x._t===tid))};
- L.append(el('b','','Твои подарки'),el('div','sub','Выбери один подарок, можно добавить коски'),lg,ci);
+  info.textContent=!(sg||stake>0)?'Выбери подарок слева или добавь коски':!tid?'Выбери цель справа':ch<1?'Цель слишком дорогая для такой ставки (шанс меньше 1%)':'Ставка '+stake+' → цель '+tp+' · шанс '+ch+'%';
+  go.disabled=!((sg||stake>0)&&tid&&ch>=1);[...lg.children].forEach(x=>x.classList.toggle('sel',x._g===sg));[...rg.children].forEach(x=>x.classList.toggle('sel',x._t===tid))};
+ const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=Math.max(0,bal);sl.value=0;sl.oninput=()=>{ci.value=sl.value;upd()};
+ const qb=el('div','row');[['25%',.25],['50%',.5],['MAX',1]].forEach(([t,f])=>{const b=el('button','',t);b.onclick=()=>{ci.value=Math.floor(bal*f);sl.value=ci.value;upd()};qb.append(b)});
+ L.append(el('b','','Твои подарки'),el('div','sub','Выбери подарок и/или крути одним балансом'),lg,el('div','sec','💰 Баланс: '+bal+' косок'),ci,sl,qb);
  myGifts.forEach(g=>{const e=giftEl(g,()=>{sg=g;upd()},'🪙 '+price(g.type)+(g.n?' · №'+g.n:''));e._g=g;lg.append(e)});
  if(!myGifts.length)lg.append(el('div','sub','У тебя нет подарков. Купи в 🛍️ магазине.'));
  Rt.append(el('b','','Цель апгрейда'),el('div','sub','Выбери NFT, который хочешь получить'),rg);
@@ -852,15 +883,15 @@ function gUpg(p){
   const left=x.supply?x.supply-(maxN[id]||0):1,e=giftEl({type:id},()=>{if(left<=0)return toast('Распродано');tid=id;upd()},'🪙 '+x.price+(x.supply?' · осталось '+Math.max(0,left):''));
   e._t=id;if(left<=0)e.style.opacity=.4;rg.append(e)});
  if(!rg.children.length)rg.append(el('div','sub','Админ ещё не выставил NFT'));
- ci.oninput=upd;
+ ci.oninput=()=>{sl.value=Math.min(+ci.value||0,+sl.max);upd()};
  go.onclick=async()=>{go.disabled=true;res.textContent='';
   try{await freshBal();const {coins,stake,tp,ch}=calc();if(coins>bal)throw 'Не хватает косок';
-   const r=await bet({kind:'upgrade',stake,target:tp,chance:ch,coinsIn:coins,debit:coins,inGift:sg.id,outType:tid},(b,id)=>b.update(doc(db,'gifts',sg.id),{owner:'house',lastBet:id}));
+   const r=sg?await bet({kind:'upgrade',stake,target:tp,chance:ch,coinsIn:coins,debit:coins,inGift:sg.id,outType:tid},(b,id)=>b.update(doc(db,'gifts',sg.id),{owner:'house',lastBet:id})):await bet({kind:'upgradec',stake,target:tp,chance:ch,coinsIn:coins,debit:coins,inGift:'',outType:tid});
    aw.style.transition='none';aw.style.transform='rotate(0deg)';void aw.offsetWidth;aw.style.transition='transform 4s cubic-bezier(.12,.7,.1,1)';aw.style.transform='rotate('+(2160+r.roll*3.6-ch*1.8+1.8)+'deg)';
    await sleep(4300);
    if(r.win){let ok=false;for(let i=0;i<3&&!ok;i++){try{await setDoc(doc(db,'gifts','u'+r.id),{type:tid,owner:uid,ownerName:me,fromUid:'upgrade',fromName:'Апгрейд',n:(maxN[tid]||0)+1,ts:Date.now(),bet:r.id});ok=true}catch(e){await sleep(700)}}
     res.textContent=ok?'🔥 Апгрейд удался!':'Выигрыш есть, но выдать подарок не удалось — напиши админу';res.className='gres win'}
-   else{res.textContent='💥 Не повезло — подарок сгорел (выпало '+r.roll+')';res.className='gres lose';tone(220,0,.5,.15)}
+   else{res.textContent='💥 Не повезло — '+(sg?'подарок сгорел':'коски потеряны')+' (выпало '+r.roll+')';res.className='gres lose';tone(220,0,.5,.15)}
    await sleep(1600);p.textContent='';gUpg(p);return}
   catch(e){errT(e)}go.disabled=false;upd()};
  C.append(wheel,info,go,res);w.append(L,C,Rt);p.append(w);upd()}

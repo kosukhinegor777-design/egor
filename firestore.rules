@@ -93,7 +93,21 @@ service cloud.firestore {
         && request.resource.data.n >= 1
         && caseSlot(get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.caseId,
                     get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.t.toMillis() % 1000,
-                    request.resource.data.type));
+                    request.resource.data.type)) || (
+        // получение подарка после апгрейда на одни коски
+        request.auth != null
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.fromUid == 'upgrade'
+        && request.resource.data.bet is string
+        && gid == 'u' + request.resource.data.bet
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.kind == 'upgradec'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.outType == request.resource.data.type
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.t.toMillis() % 100) < get(/databases/$(database)/documents/bets/$(request.resource.data.bet)).data.chance
+        && get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.bet == request.resource.data.bet
+        && request.resource.data.n >= 1
+        && (get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply == 0
+            || request.resource.data.n <= get(/databases/$(database)/documents/catalog/$(request.resource.data.type)).data.supply));
       allow update: if isAdmin() || (
         request.auth != null
         && resource.data.owner == request.auth.uid
@@ -220,6 +234,15 @@ service cloud.firestore {
             && request.resource.data.payout == 0
             && request.resource.data.debit == request.resource.data.stake
             && request.resource.data.stake == get(/databases/$(database)/documents/cases/$(request.resource.data.caseId)).data.price)
+          ||
+          (request.resource.data.kind == 'upgradec'
+            && request.resource.data.payout == 0
+            && request.resource.data.inGift == ''
+            && request.resource.data.debit == request.resource.data.coinsIn
+            && request.resource.data.stake == request.resource.data.coinsIn
+            && request.resource.data.target == get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.price
+            && get(/databases/$(database)/documents/catalog/$(request.resource.data.outType)).data.free == false
+            && request.resource.data.chance * request.resource.data.target <= 95 * request.resource.data.stake)
         );
       allow update: if request.auth != null && resource.data.uid == request.auth.uid
         && resource.data.claimed == false && request.resource.data.claimed == true
