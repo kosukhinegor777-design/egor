@@ -23,7 +23,8 @@ service cloud.firestore {
 
     // админы создаются ТОЛЬКО вручную в консоли Firebase
     match /admins/{id} {
-      allow read: if request.auth != null && request.auth.uid == id;
+      // список админов виден всем вошедшим (для значка ✓); менять можно только вручную в консоли
+      allow read: if request.auth != null;
     }
 
     match /cases/{id} {

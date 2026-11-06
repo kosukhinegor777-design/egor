@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Egor</title>
 <link rel="icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6366f1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Egor">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--bg:#f3f4fb;--panel:#fff;--text:#16182b;--muted:#7a7f9a;--line:#e4e6f2;--brand:#5b5bf0;--brand2:#8b4be8;--their:#eceefa;--ok:#22c55e}
 @media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0e0f1a;--panel:#171829;--text:#eef0ff;--muted:#8d92b0;--line:#26283f;--their:#23253d}}
@@ -326,6 +333,19 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 .upp input[type=range]{width:100%;accent-color:#facc15}
 .gift.sel{outline:3px solid #facc15;box-shadow:0 0 22px rgba(250,204,21,.45)}
 .pct{text-shadow:0 0 24px currentColor}
+
+.vb{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;margin-left:6px;vertical-align:middle;font-size:11px;font-weight:900;font-style:normal;color:#2a1700;-webkit-text-fill-color:#2a1700;background:linear-gradient(135deg,#fde047,#f59e0b);box-shadow:0 0 10px rgba(250,204,21,.7);animation:vbp 3s ease-in-out infinite}
+@keyframes vbp{50%{box-shadow:0 0 18px rgba(250,204,21,1)}}
+#menu{max-height:calc(100dvh - 100px);overflow-y:auto}
+#menu.open button:nth-of-type(10){transition-delay:.39s}
+/* ===== чёрно-белая тема ===== */
+:root[data-theme="bw"]{color-scheme:dark;filter:grayscale(1);--bg:#050505;--panel:#121212;--card:rgba(18,18,18,.84);--text:#f4f4f4;--muted:#9b9b9b;--line:rgba(255,255,255,.13);--their:#222;--brand:#f2f2f2;--brand2:#8f8f8f;--shadow:0 12px 40px rgba(0,0,0,.6)}
+:root[data-theme="bw"] body{background:radial-gradient(900px 520px at 8% -8%,rgba(255,255,255,.12),transparent 60%),radial-gradient(800px 520px at 100% 0%,rgba(255,255,255,.07),transparent 55%),var(--bg)}
+:root[data-theme="bw"] .m.me{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+:root[data-theme="bw"] button.p,:root[data-theme="bw"] .m.me,:root[data-theme="bw"] .tabs .on,:root[data-theme="bw"] .bd,:root[data-theme="bw"] #dots.on,:root[data-theme="bw"] .av{color:#0a0a0a}
+:root[data-theme="bw"] .m.me small{color:#3a3a3a}
+:root[data-theme="bw"] button.p{box-shadow:0 6px 18px rgba(255,255,255,.18)}
+.gift.case img{width:96px;height:96px;border-radius:18px}.gift.case{padding:14px}
 </style>
 </head>
 <body>
@@ -351,6 +371,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="cases" title="Кейсы с NFT"><b class="mi" style="--c:#3b82f6">📦</b><i>Кейсы</i></button>
    <button id="adm" title="Панель админа" style="display:none"><b class="mi" style="--c:#ef4444">🛡️</b><i>Админ-панель</i></button>
    <button id="hol" title="Праздничная тема"><b class="mi" style="--c:#f97316">🎉</b><i>Праздники</i></button>
+   <button id="inst" title="Установить приложение"><b class="mi" style="--c:#22c55e">📲</b><i>Установить приложение</i></button>
    <hr>
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
@@ -546,7 +567,8 @@ let isAdm=false;
 let bal=0,maxN={},allG={},firstPrem=true,prevPrem=0,lastTroll=0,trollOn=true;
 try{trollOn=localStorage.getItem('egor_troll')!=='0'}catch(e){}
 function listen(){
- onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();$('#adm').style.display=isAdm?'':'none'});
+ onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();isAdm?admSet.add(uid):admSet.delete(uid);$('#adm').style.display=isAdm?'':'none';renderList();head()});
+ onSnapshot(collection(db,'admins'),s=>{admSet=new Set([...s.docs.map(d=>d.id),...(isAdm?[uid]:[])]);renderMe();renderList();head();renderMsgs()},()=>{});
  onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
@@ -717,11 +739,11 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
   const x=await scr();await Promise.all(ids.map(i=>setDoc(doc(db,'trolls',i),x)));toast('👻 Скример запущен ('+ids.length+')')};
  sec(c,'📦 Кейсы с NFT');const cf=el('div','form'),clean=s=>String(s||'').replace(/[<&"]/g,''),
   nopt='<option value="">— пусто —</option>'+Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).map(([id,x])=>'<option value="'+id+'">'+(x.emoji||'🖼️')+' '+clean(x.name)+' · 🪙'+x.price+'</option>').join('');
- cf.innerHTML='<input class="kn" placeholder="Название кейса"><input class="ke" placeholder="Эмодзи кейса (📦)"><input class="kp" type="number" min="1" placeholder="Цена кейса в косках">'+[0,1,2,3,4,5,6,7].map(()=>'<div class="row"><select class="ks" style="flex:1">'+nopt+'</select><input class="kw" type="number" min="0" step="0.1" placeholder="%" style="max-width:90px"></div>').join('')+'<button class="p kb">Создать кейс</button><div class="sub">До 8 предметов, шансы в сумме = 100%. Пустые строки пропускаются.</div>';c.append(cf);
+ cf.innerHTML='<input class="kn" placeholder="Название кейса"><input class="ke" placeholder="Эмодзи кейса (📦)"><div class="sub">Фото для превью кейса (необязательно):</div><input class="kf" type="file" accept="image/*"><input class="kp" type="number" min="1" placeholder="Цена кейса в косках">'+[0,1,2,3,4,5,6,7].map(()=>'<div class="row"><select class="ks" style="flex:1">'+nopt+'</select><input class="kw" type="number" min="0" step="0.1" placeholder="%" style="max-width:90px"></div>').join('')+'<button class="p kb">Создать кейс</button><div class="sub">До 8 предметов, шансы в сумме = 100%. Пустые строки пропускаются.</div>';c.append(cf);
  q(cf,'.kb').onclick=async()=>{const name=q(cf,'.kn').value.trim(),price=Math.floor(+q(cf,'.kp').value);
   const rows=[...cf.querySelectorAll('.row')].map(r=>[r.querySelector('.ks').value,+r.querySelector('.kw').value]).filter(x=>x[0]&&x[1]>0),sum=rows.reduce((a,x)=>a+x[1],0);
   if(!name||!(price>=1))return toast('Нужны название и цена');if(!rows.length||Math.abs(sum-100)>0.15)return toast('Шансы должны давать 100% (сейчас '+sum.toFixed(1)+')');
-  const d={name,emoji:q(cf,'.ke').value.trim()||'📦',price,ts:Date.now()};let cum=0;
+  const kf=q(cf,'.kf').files[0],d={name,emoji:q(cf,'.ke').value.trim()||'📦',img:kf?await shrink(kf,320,.82,true):'',price,ts:Date.now()};let cum=0;
   for(let k=0;k<8;k++){if(k<rows.length){cum=k===rows.length-1?1000:Math.min(cum+Math.round(rows[k][1]*10),1000-(rows.length-1-k));d['t'+k]=rows[k][0];d['c'+k]=cum}else{d['t'+k]='';d['c'+k]=1000}}
   await setDoc(doc(db,'cases','c'+Date.now().toString(36)),d);toast('Кейс создан');openAdmin()};
  const sdb=el('button','','📦 Создать стартовые кейсы (авто-шансы)');sdb.style.marginTop='8px';
@@ -736,7 +758,7 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
   toast('Стартовые кейсы созданы');openAdmin()};c.append(sdb);
  Object.entries(casesC).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'📦')+' '+x.name+' · 🪙'+x.price));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена кейса:',x.price);if(v===null||!(+v>=1))return;await updateDoc(doc(db,'cases',id),{price:Math.floor(+v)});openAdmin()};
-  const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить кейс «'+x.name+'»?')){await deleteDoc(doc(db,'cases',id));openAdmin()}};r.append(pb,b);c.append(r)});
+  const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить кейс «'+x.name+'»?')){await deleteDoc(doc(db,'cases',id));openAdmin()}};const ib=el('button','','🖼️');ib.title='Фото кейса';ib.onclick=()=>{const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(f.files[0]){await updateDoc(doc(db,'cases',id),{img:await shrink(f.files[0],320,.82,true)});toast('Фото кейса обновлено');openAdmin()}};f.click()};r.append(ib,pb,b);c.append(r)});
  sec(c,'Каталог подарков');
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
@@ -752,7 +774,8 @@ const EXCL=['🦄','🐉','🪩','🫧','🦚','🪽','🧿','🪬','🌌','🔮
 const COMMON=['😀','😂','🥹','😍','😘','😎','🤔','😴','😭','😡','🥳','🤯','👍','👎','👏','🙏','💪','🔥','✨','💯','❤️','💔','🎉','🎂','🍕','🍔','☕','🐶','🐱','🦊','🐼','🚀','⚽','🎮','🎧','🌹','🌞','🌙'];
 function applyName(e,id,fb){const P=profs[id]||{},pr=isPrem(id);e.classList.remove('rb');e.style.color='';
  e.textContent=(P.name||fb)+(pr&&P.status?' '+P.status:'')+(pr?' ⭐':'');
- if(pr&&P.nstyle==='rainbow')e.classList.add('rb');else if(pr&&P.nstyle)e.style.color=P.nstyle}
+ if(pr&&P.nstyle==='rainbow')e.classList.add('rb');else if(pr&&P.nstyle)e.style.color=P.nstyle;
+ if(admSet.has(id)){const v=document.createElement('span');v.className='vb';v.title='Администратор Egor';v.textContent='✓';e.append(v)}}
 async function sendSticker(s){if(!cur)return;if(!isPrem(uid))return toast('Стикеры — для Косухость+ ⭐');snd.send();
  try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',sticker:s,ts:Date.now()})}catch(e){toast('Не удалось отправить')}}
 function openEmo(){const p=$('#emp');if(p.style.display==='block'){p.style.display='none';return}
@@ -929,12 +952,13 @@ function gCases(p){
  const list=Object.entries(casesC).sort((a,b)=>a[1].price-b[1].price);
  if(!list.length){p.append(el('div','sub','Админ ещё не создал кейсы 📦'));return}
  const g=el('div','grid');
- list.forEach(([id,c])=>{const e=el('div','gift');e.append(el('div','e',c.emoji||'📦'),el('div','nm',c.name),el('div','num','🪙 '+c.price+' · '+slotsOf(c).length+' предм.'));e.onclick=()=>{p.textContent='';caseView(p,id)};g.append(e)});
+ list.forEach(([id,c])=>{const e=el('div','gift case');e.append(c.img?(()=>{const i=el('img');i.src=c.img;return i})():el('div','e',c.emoji||'📦'),el('div','nm',c.name),el('div','num','🪙 '+c.price+' · '+slotsOf(c).length+' предм.'));e.onclick=()=>{p.textContent='';caseView(p,id)};g.append(e)});
  p.append(g)}
 function caseView(p,id){
  const c=casesC[id];if(!c){gCases(p);return}
  const S=slotsOf(c),back=el('button','','← Все кейсы'),head=el('div','nm',(c.emoji||'📦')+' '+c.name),rl=el('div','rl'),st=el('div','rls'),items=el('div','grid'),go=el('button','p','Открыть за 🪙 '+c.price),res=el('div','gres');
  back.onclick=()=>{p.textContent='';gCases(p)};head.style.fontSize='20px';
+ if(c.img){head.textContent='';const hi=el('img');hi.src=c.img;hi.style.cssText='width:56px;height:56px;border-radius:14px;object-fit:cover;vertical-align:middle;margin-right:12px';head.append(hi,c.name)}
  const tile=t=>{const x=cat[t]||{name:'?',emoji:'🎁',rarity:0},d=el('div','rlt r'+(x.rarity||0));
   if(x.img){const i=el('img');i.src=x.img;d.append(i)}else d.append(el('div','e',x.emoji||'🎁'));d.append(el('div','',x.name));return d};
  const rnd=()=>{let x=Math.random()*100,a=0;for(const s of S){a+=s.p;if(x<a)return s.t}return S[0].t};
@@ -977,6 +1001,24 @@ function openHol(){openMod('🎉 Праздничная тема',c=>{const s=ho
   const b=el('button','perk'+(s===k?' on':''),t);b.style.cssText='width:100%;text-align:left;display:block;margin:6px 0';b.onclick=()=>{try{localStorage.setItem('egor_hol',k)}catch(e){}applyHol();openHol()};c.append(b)});
  c.append(el('div','sub','Тема меняет цвета и добавляет падающие украшения только у тебя. Хэллоуин: 24 окт – 1 нояб, Новый год: 15 дек – 10 янв, Пасха (православная): ±4 дня, 9 Мая: 5–10 мая, 8 Марта: 4–9 марта.'))})}
 $('#hol').onclick=openHol;applyHol();
+
+
+/* ---- приложение (PWA), темы ---- */
+let admSet=new Set(),dip=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e});
+window.addEventListener('appinstalled',()=>{$('#inst').style.display='none';toast('✅ Egor установлен!')});
+if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)$('#inst').style.display='none';
+$('#inst').onclick=async()=>{if(dip){dip.prompt();try{await dip.userChoice}catch(e){}dip=null;return}openInstall()};
+function openInstall(){openMod('📲 Установить Egor',c=>{
+ [['🍎 iPhone / iPad (Safari)','Нажми «Поделиться» ⬆️ → «На экран „Домой“».'],['🤖 Android (Chrome)','Меню ⋮ → «Установить приложение» (или «Добавить на главный экран»).'],['💻 Windows / Mac (Chrome, Edge)','Значок установки справа в адресной строке или меню ⋮ → «Установить Egor».']]
+  .forEach(([t,d])=>{const p=el('div','perk');p.append(el('b','',t),el('div','sub',d));c.append(p)});
+ c.append(el('div','sub','После установки Egor открывается в отдельном окне, со своей иконкой, без панели браузера.'))})}
+function openTheme(){openMod('🎨 Тема оформления',c=>{const R=document.documentElement,cur=R.dataset.theme||'';
+ [['','🖥️ Как в системе'],['light','☀️ Светлая'],['dark','🌙 Тёмная'],['bw','⚫⚪ Чёрно-белая']].forEach(([k,t])=>{
+  const b=el('button','perk'+(cur===k?' on':''),t);b.style.cssText='width:100%;text-align:left;display:block;margin:6px 0;font-size:16px';
+  b.onclick=()=>{if(k)R.dataset.theme=k;else delete R.dataset.theme;try{k?localStorage.setItem('egor_theme',k):localStorage.removeItem('egor_theme')}catch(e){}openTheme()};c.append(b)});
+ c.append(el('div','sub','Чёрно-белая тема делает весь интерфейс монохромным.'))})}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
@@ -1055,8 +1097,8 @@ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').s
  m.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.id!=='mute'&&b.id!=='theme')close()});
  document.addEventListener('click',e=>{if(!e.target.closest('#menu'))close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
-(function(){const R=document.documentElement;try{const t=localStorage.getItem('egor_theme');if(t)R.dataset.theme=t}catch(e){}
- $('#theme').onclick=()=>{const dark=R.dataset.theme?R.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches,n=dark?'light':'dark';R.dataset.theme=n;try{localStorage.setItem('egor_theme',n)}catch(e){}}})();
+{const t=(()=>{try{return localStorage.getItem('egor_theme')}catch(e){return null}})();if(t)document.documentElement.dataset.theme=t}
+$('#theme').onclick=openTheme;
 </script>
 </body>
 </html>
