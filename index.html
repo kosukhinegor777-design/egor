@@ -1099,6 +1099,23 @@ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').s
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
 {const t=(()=>{try{return localStorage.getItem('egor_theme')}catch(e){return null}})();if(t)document.documentElement.dataset.theme=t}
 $('#theme').onclick=openTheme;
+/* ---- системная кнопка «Назад» (Android / жест) ---- */
+{const isMob=()=>matchMedia('(max-width:700px)').matches,
+ layers=[
+  {open:()=>$('#lb').style.display==='grid',close:()=>{$('#lb').style.display='none'}},
+  {open:()=>$('#mod').style.display==='grid',close:()=>{$('#mod').style.display='none'}},
+  {open:()=>$('#menu').classList.contains('open'),close:()=>{$('#menu').classList.remove('open');$('#dots').classList.remove('on')}},
+  {open:()=>$('#emp').style.display==='block',close:()=>{$('#emp').style.display='none'}},
+  {open:()=>{const c=$('#call');return c.style.display==='flex'&&!c.classList.contains('min')&&!c.classList.contains('incoming')},close:()=>$('#cmin').click()},
+  {open:()=>isMob()&&$('#app').classList.contains('chat'),close:()=>{$('#app').classList.remove('chat')}}];
+ let hasEntry=false,ignorePop=0;
+ const navSync=()=>{const o=layers.some(l=>l.open());
+  if(o&&!hasEntry){history.pushState({egor:1},'');hasEntry=true}
+  else if(!o&&hasEntry){hasEntry=false;ignorePop++;history.back()}};
+ window.addEventListener('popstate',()=>{if(ignorePop){ignorePop--;return}
+  hasEntry=false;const top=layers.find(l=>l.open());if(top)top.close();navSync()});
+ const mo=new MutationObserver(navSync);
+ ['#lb','#mod','#menu','#emp','#call','#app'].forEach(s=>{const n=$(s);if(n)mo.observe(n,{attributes:true,attributeFilter:['style','class']})});}
 </script>
 </body>
 </html>
