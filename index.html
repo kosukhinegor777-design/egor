@@ -346,6 +346,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 :root[data-theme="bw"] .m.me small{color:#3a3a3a}
 :root[data-theme="bw"] button.p{box-shadow:0 6px 18px rgba(255,255,255,.18)}
 .gift.case img{width:96px;height:96px;border-radius:18px}.gift.case{padding:14px}
+.ver{text-align:center;font-size:11px;color:var(--muted);padding:6px 0 2px}
 </style>
 </head>
 <body>
@@ -376,6 +377,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
+   <div class="ver">Версия 22 · кнопка «Назад» ✓</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -410,6 +412,24 @@ import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,o
 
 const $=s=>document.querySelector(s);
 const hideBoot=()=>{window.__egorReady=1;const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),500)}};
+/* ---- системная кнопка «Назад» (Android / жест) ---- */
+{const isMob=()=>matchMedia('(max-width:700px)').matches,
+ layers=[
+  {open:()=>$('#lb').style.display==='grid',close:()=>{$('#lb').style.display='none'}},
+  {open:()=>$('#mod').style.display==='grid',close:()=>{$('#mod').style.display='none'}},
+  {open:()=>$('#menu').classList.contains('open'),close:()=>{$('#menu').classList.remove('open');$('#dots').classList.remove('on')}},
+  {open:()=>$('#emp').style.display==='block',close:()=>{$('#emp').style.display='none'}},
+  {open:()=>{const c=$('#call');return c.style.display==='flex'&&!c.classList.contains('min')&&!c.classList.contains('incoming')},close:()=>$('#cmin').click()},
+  {open:()=>isMob()&&$('#app').classList.contains('chat'),close:()=>{$('#app').classList.remove('chat')}}];
+ let hasEntry=false,ignorePop=0;
+ const navSync=()=>{const o=layers.some(l=>l.open());
+  if(o&&!hasEntry){history.pushState({egor:1},'');hasEntry=true}
+  else if(!o&&hasEntry){hasEntry=false;ignorePop++;history.back()}};
+ window.addEventListener('popstate',()=>{if(ignorePop){ignorePop--;return}
+  hasEntry=false;const top=layers.find(l=>l.open());if(top)top.close();navSync()});
+ const mo=new MutationObserver(navSync);
+ ['#lb','#mod','#menu','#emp','#call','#app'].forEach(s=>{const n=$(s);if(n)mo.observe(n,{attributes:true,attributeFilter:['style','class']})});}
+
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const DOMAIN='@egor.app';
@@ -1099,23 +1119,6 @@ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').s
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
 {const t=(()=>{try{return localStorage.getItem('egor_theme')}catch(e){return null}})();if(t)document.documentElement.dataset.theme=t}
 $('#theme').onclick=openTheme;
-/* ---- системная кнопка «Назад» (Android / жест) ---- */
-{const isMob=()=>matchMedia('(max-width:700px)').matches,
- layers=[
-  {open:()=>$('#lb').style.display==='grid',close:()=>{$('#lb').style.display='none'}},
-  {open:()=>$('#mod').style.display==='grid',close:()=>{$('#mod').style.display='none'}},
-  {open:()=>$('#menu').classList.contains('open'),close:()=>{$('#menu').classList.remove('open');$('#dots').classList.remove('on')}},
-  {open:()=>$('#emp').style.display==='block',close:()=>{$('#emp').style.display='none'}},
-  {open:()=>{const c=$('#call');return c.style.display==='flex'&&!c.classList.contains('min')&&!c.classList.contains('incoming')},close:()=>$('#cmin').click()},
-  {open:()=>isMob()&&$('#app').classList.contains('chat'),close:()=>{$('#app').classList.remove('chat')}}];
- let hasEntry=false,ignorePop=0;
- const navSync=()=>{const o=layers.some(l=>l.open());
-  if(o&&!hasEntry){history.pushState({egor:1},'');hasEntry=true}
-  else if(!o&&hasEntry){hasEntry=false;ignorePop++;history.back()}};
- window.addEventListener('popstate',()=>{if(ignorePop){ignorePop--;return}
-  hasEntry=false;const top=layers.find(l=>l.open());if(top)top.close();navSync()});
- const mo=new MutationObserver(navSync);
- ['#lb','#mod','#menu','#emp','#call','#app'].forEach(s=>{const n=$(s);if(n)mo.observe(n,{attributes:true,attributeFilter:['style','class']})});}
 </script>
 </body>
 </html>
