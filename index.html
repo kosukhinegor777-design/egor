@@ -347,6 +347,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 :root[data-theme="bw"] button.p{box-shadow:0 6px 18px rgba(255,255,255,.18)}
 .gift.case img{width:96px;height:96px;border-radius:18px}.gift.case{padding:14px}
 .ver{text-align:center;font-size:11px;color:var(--muted);padding:6px 0 2px}
+#msgs{scroll-behavior:auto}
 </style>
 </head>
 <body>
@@ -377,7 +378,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 22 · кнопка «Назад» ✓</div>
+   <div class="ver">Версия 23</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -469,7 +470,7 @@ async function sendImage(f){
  const ph=el('div','sk sk-b');ph.style.cssText='width:38%;height:150px;align-self:flex-end';$('#msgs').append(ph);$('#msgs').scrollTop=1e9;
  try{let u=isPrem(uid)?await shrink(f,1600,.9):await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,1100,.75);if(u.length>900000)u=await shrink(f,700,.6);
   if(u.length>900000)return alert('Картинка слишком большая');
-  snd.send();await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',img:u,ts:Date.now()})}
+  snd.send();forceBottom=true;await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:'',img:u,ts:Date.now()})}
  catch(e){alert('Не удалось отправить фото')}finally{ph.remove()}
 }
 $('#att').onclick=()=>$('#fimg').click();
@@ -546,13 +547,13 @@ function renderList(){
 function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
 function openChat(f){
- cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
+ cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;forceBottom=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
  unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());msgLoading=false;renderMsgs();markRead()});
 }
 function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
  return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
 function renderMsgs(){
- const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';B.textContent='';if(msgLoading){skMsgs(B);return}if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
+ const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';const atBottom=B.scrollHeight-B.scrollTop-B.clientHeight<140,prevTop=B.scrollTop,stick=forceBottom||atBottom;B.textContent='';if(msgLoading){skMsgs(B);return}forceBottom=false;if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
  let lastDay='';
  msgs.forEach((m,i)=>{const dk=new Date(m.ts).toDateString();if(dk!==lastDay){lastDay=dk;B.append(dayLabel(m.ts))}
   const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
@@ -566,9 +567,11 @@ function renderMsgs(){
   const sm=el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
   if(m.from===uid){const rdv=(friends.get(cur)||{}).read||0,ok=m.ts<=rdv;sm.append(' ',el('span','tk'+(ok?' r':''),ok?'✓✓':'✓'))}
   d.append(sm);B.append(d)});
- shown=msgs.length;B.scrollTop=B.scrollHeight;
+ shown=msgs.length;
+ if(stick){const fix=()=>{B.scrollTop=B.scrollHeight};fix();requestAnimationFrame(fix);setTimeout(fix,120);B.querySelectorAll('img').forEach(im=>{if(!im.complete)im.addEventListener('load',fix)})}
+ else B.scrollTop=prevTop;
 }
-async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';snd.send();typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
+async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
  try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
 $('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
 $('#back').onclick=()=>$('#app').classList.remove('chat');
@@ -847,7 +850,7 @@ $('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>cur&&openProfile(cur)
 
 
 /* ---- казино и апгрейдер (только виртуальные коски) ---- */
-let friendsLoaded=false,msgLoading=false,catLoaded=false,giftsLoaded=false,modRe=null;
+let friendsLoaded=false,msgLoading=false,catLoaded=false,giftsLoaded=false,modRe=null,forceBottom=false;
 function tryRe(){if(modRe&&catLoaded&&giftsLoaded&&mod.style.display==='grid'){const f=modRe;modRe=null;f()}}
 function skFill(p,n){for(let i=0;i<n;i++)p.append(el('div','sk sk-g'))}
 function skRows(p,n){const W=[[52,78],[40,66],[58,72],[46,84],[50,60],[38,74],[55,70]];for(let i=0;i<n;i++){const r=el('div','sk-row'),l=el('div','sk-l'),a=el('div','sk'),b=el('div','sk');a.style.width=W[i%7][0]+'%';b.style.width=W[i%7][1]+'%';l.append(a,b);r.append(el('div','sk sk-av'),l);p.append(r)}}
@@ -1119,6 +1122,7 @@ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)$('#cscr').s
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
 {const t=(()=>{try{return localStorage.getItem('egor_theme')}catch(e){return null}})();if(t)document.documentElement.dataset.theme=t}
 $('#theme').onclick=openTheme;
+$('#txt').addEventListener('focus',()=>setTimeout(()=>{const B=$('#msgs');B.scrollTop=B.scrollHeight},350));
 </script>
 </body>
 </html>
