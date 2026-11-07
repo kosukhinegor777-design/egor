@@ -348,6 +348,16 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 .gift.case img{width:96px;height:96px;border-radius:18px}.gift.case{padding:14px}
 .ver{text-align:center;font-size:11px;color:var(--muted);padding:6px 0 2px}
 #msgs{scroll-behavior:auto}
+
+.ckw{position:relative;text-align:center;padding:6px 0}
+.ckc{font-size:112px;background:none;padding:0;line-height:1;display:block;margin:6px auto;filter:drop-shadow(0 12px 24px rgba(250,204,21,.5));transition:transform .08s}
+.ckc:hover{filter:drop-shadow(0 12px 24px rgba(250,204,21,.5))}.ckc:active{transform:scale(.86)}
+.flt{position:absolute;pointer-events:none;font-weight:800;font-size:24px;color:#facc15;text-shadow:0 2px 8px #000;animation:flt .8s ease-out forwards}
+@keyframes flt{to{transform:translateY(-90px);opacity:0}}
+.cgarea{position:relative;height:290px;border-radius:18px;background:var(--bg);border:1px solid var(--line);overflow:hidden;touch-action:manipulation}
+.cg{position:absolute;top:-44px;font-size:42px;cursor:pointer;user-select:none;animation:cgfall linear forwards}
+@keyframes cgfall{to{transform:translateY(340px)}}
+#menu.open button:nth-of-type(11){transition-delay:.43s}
 </style>
 </head>
 <body>
@@ -371,6 +381,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="shop" title="Магазин и коллекция"><b class="mi" style="--c:#ec4899">🛍️</b><i>Магазин</i></button>
    <button id="cas" title="Казино и апгрейдер"><b class="mi" style="--c:#a855f7">🎰</b><i>Казино</i></button>
    <button id="cases" title="Кейсы с NFT"><b class="mi" style="--c:#3b82f6">📦</b><i>Кейсы</i></button>
+   <button id="work" title="Работа: зарабатывай коски"><b class="mi" style="--c:#10b981">💼</b><i>Работа</i></button>
    <button id="adm" title="Панель админа" style="display:none"><b class="mi" style="--c:#ef4444">🛡️</b><i>Админ-панель</i></button>
    <button id="hol" title="Праздничная тема"><b class="mi" style="--c:#f97316">🎉</b><i>Праздники</i></button>
    <button id="inst" title="Установить приложение"><b class="mi" style="--c:#22c55e">📲</b><i>Установить приложение</i></button>
@@ -378,7 +389,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 23</div>
+   <div class="ver">Версия 24</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -598,7 +609,7 @@ function listen(){
  onSnapshot(collection(db,'cases'),s=>{casesC={};s.docs.forEach(d=>casesC[d.id]=d.data())});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());catLoaded=true;renderMsgs();tryRe()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
- onSnapshot(doc(db,'wallets',uid),s=>{bal=s.exists()?(s.data().coins||0):0;updBal()});
+ onSnapshot(doc(db,'wallets',uid),s=>{wal=s.exists()?s.data():{};bal=wal.coins||0;updBal()});
  onSnapshot(doc(db,'trolls',uid),s=>{if(!s.exists())return;const x=s.data();if(x.ts===lastTroll||Date.now()-x.ts>15000)return;lastTroll=x.ts;if(trollOn)runTroll(x)});
  let first=true;
  onSnapshot(collection(db,'gifts'),s=>{
@@ -660,6 +671,7 @@ async function buy(id){
  catch(e){toast('Не удалось купить (возможно, кто-то успел раньше)')}}
 function openShop(){openMod('🛍️ Магазин · 🪙 '+bal+' косок',c=>{
  if(!catLoaded||!giftsLoaded){modRe=openShop;sec(c,'Загружаю подарки…');const sg=el('div','grid');skFill(sg,6);c.append(sg);return}
+ if(isAdm){const rb=el('button','p','🔄 Пополнить все подарки (админ)');rb.style.marginBottom='8px';rb.onclick=restockAll;c.append(rb)}
  sec(c,'NFT-подарки в продаже');const g=el('div','grid');
  Object.entries(cat).filter(([,x])=>!x.free&&x.price>0).sort((a,b)=>a[1].price-b[1].price).forEach(([id,x])=>{const left=x.supply?Math.max(0,x.supply-(maxN[id]||0)):null;
   g.append(giftEl({type:id},()=>buy(id),'🪙 '+x.price+(left!=null?' · осталось '+left+'/'+x.supply:'')))});
@@ -782,7 +794,7 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
  Object.entries(casesC).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'📦')+' '+x.name+' · 🪙'+x.price));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена кейса:',x.price);if(v===null||!(+v>=1))return;await updateDoc(doc(db,'cases',id),{price:Math.floor(+v)});openAdmin()};
   const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить кейс «'+x.name+'»?')){await deleteDoc(doc(db,'cases',id));openAdmin()}};const ib=el('button','','🖼️');ib.title='Фото кейса';ib.onclick=()=>{const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(f.files[0]){await updateDoc(doc(db,'cases',id),{img:await shrink(f.files[0],320,.82,true)});toast('Фото кейса обновлено');openAdmin()}};f.click()};r.append(ib,pb,b);c.append(r)});
- sec(c,'Каталог подарков');
+ sec(c,'Каталог подарков');{const rb=el('button','p','🔄 Пополнить все подарки в магазине');rb.style.marginBottom='8px';rb.onclick=restockAll;c.append(rb)}
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
   const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить «'+x.name+'» из каталога?')){await deleteDoc(doc(db,'catalog',id));openAdmin()}};r.append(b);c.append(r)});
@@ -1042,6 +1054,86 @@ function openTheme(){openMod('🎨 Тема оформления',c=>{const R=do
   b.onclick=()=>{if(k)R.dataset.theme=k;else delete R.dataset.theme;try{k?localStorage.setItem('egor_theme',k):localStorage.removeItem('egor_theme')}catch(e){}openTheme()};c.append(b)});
  c.append(el('div','sub','Чёрно-белая тема делает весь интерфейс монохромным.'))})}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+
+/* ---- работа: кликер, ловец монет, смены, бонус ---- */
+let wal={};
+const JOBS=[['courier','🛵 Курьер',300000,25],['mover','📦 Грузчик',1800000,150],['coder','💻 Программист',7200000,600],['night','🌙 Ночная смена',28800000,2800]];
+const CL_MAX=30,CL_CD=30000,CL_DAY=1500,DAILY=150;
+const tms=t=>t&&t.toMillis?t.toMillis():0;
+const fmtT=ms=>{ms=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return (h?h+'ч ':'')+(h||m?m+'м ':'')+s+'с'};
+const errW=e=>toast(typeof e==='string'?e:'Не получилось. Проверь, что правила Firebase обновлены.');
+async function ensureWallet(){const r=doc(db,'wallets',uid),s=await getDoc(r);if(!s.exists())await setDoc(r,{coins:0});return r}
+async function walletNow(){const r=await ensureWallet();return[r,(await getDoc(r)).data()||{coins:0}]}
+async function restockAll(){
+ const v=prompt('На сколько штук пополнить КАЖДЫЙ подарок с ограниченным тиражом?','10');if(v===null)return;const n=Math.floor(+v);if(!(n>=1))return toast('Введи число от 1');
+ const b=writeBatch(db);let k=0;Object.entries(cat).forEach(([id,x])=>{if(!x.free&&x.price>0&&x.supply>0){b.update(doc(db,'catalog',id),{supply:Math.max(x.supply,maxN[id]||0)+n});k++}});
+ if(!k)return toast('Нет подарков с ограниченным тиражом');
+ try{await b.commit();toast('🔄 Пополнено подарков: '+k+' (+'+n+' шт. каждому)');if(mod.style.display==='grid')openShop()}catch(e){toast('Не удалось пополнить')}}
+async function earnClaim(amount){
+ const [r,d]=await walletNow(),now=Date.now(),et=tms(d.earnT),active=!!d.earnT&&now-et<864e5,used=active?(d.earn||0):0,since=now-tms(d.clickT);
+ if(since<CL_CD)throw 'Подожди '+fmtT(CL_CD-since)+' до следующей выплаты';
+ amount=Math.min(amount,CL_MAX,CL_DAY-used);if(amount<1)throw 'Дневной лимит ('+CL_DAY+' косок) исчерпан. Новый заход через '+fmtT(et+864e5-now);
+ const go=win=>{const u={coins:(d.coins||0)+amount,clickT:serverTimestamp()};if(win){u.earnT=serverTimestamp();u.earn=amount}else u.earn=used+amount;return updateDoc(r,u)};
+ try{await go(!active)}catch(e){await go(active)}
+ return amount}
+function wClick(p){
+ let pend=0,total=0;try{total=+localStorage.getItem('egor_clicks')||0}catch(e){}
+ const LV=[['Новичок',0],['Подработчик',300],['Профи',1500],['Магнат',6000]],
+  lvl=()=>{let n='',nx=null;LV.forEach(([t,v],i)=>{if(total>=v){n=t;nx=LV[i+1]}});return n+(nx?' · до «'+nx[0]+'»: '+(nx[1]-total):' · максимум')},
+  wrap=el('div','ckw'),coin=el('button','ckc','🪙'),info=el('div','nm'),day=el('div','sub'),claim=el('button','p','Забрать'),res=el('div','gres');
+ const upd=()=>{if(!document.body.contains(wrap)){clearInterval(tm);return}
+  const cd=CL_CD-(Date.now()-tms(wal.clickT)),act=wal.earnT&&Date.now()-tms(wal.earnT)<864e5,used=act?(wal.earn||0):0;
+  info.textContent='Копилка: '+pend+' / '+CL_MAX+' 🪙';day.textContent='Сегодня: '+used+' / '+CL_DAY+' · '+lvl();
+  claim.textContent=cd>0?'Выплата через '+Math.ceil(cd/1000)+' с':'Забрать '+pend+' 🪙';claim.disabled=pend<1||cd>0};
+ coin.onclick=()=>{if(pend>=CL_MAX)return toast('Копилка полна — забери коски 👇');pend++;total++;try{localStorage.setItem('egor_clicks',total)}catch(e){}
+  const f=el('div','flt','+1');f.style.left=(42+Math.random()*16)+'%';f.style.top='30%';wrap.append(f);setTimeout(()=>f.remove(),800);upd()};
+ claim.onclick=async()=>{claim.disabled=true;try{const n=await earnClaim(pend);pend=Math.max(0,pend-n);res.textContent='+'+n+' 🪙 зачислено';res.className='gres win';snd.win(0)}catch(e){errW(e)}upd()};
+ wrap.append(coin);p.append(info,wrap,claim,day,res,el('div','sub','Жми на монету. Выплата раз в 30 секунд, до '+CL_MAX+' косок за раз и до '+CL_DAY+' в сутки. Больше — на сменах и в бонусе.'));
+ const tm=setInterval(upd,1000);upd()}
+function wCatch(p){
+ const area=el('div','cgarea'),score=el('div','dnum','0'),go=el('button','p','Начать (20 секунд)'),res=el('div','gres');let sc=0,run=false;
+ go.onclick=()=>{if(run)return;sc=0;score.textContent='0';res.textContent='';res.className='gres';run=true;go.disabled=true;area.textContent='';let left=20;
+  const sp=setInterval(()=>{if(!document.body.contains(area)){clearInterval(sp);return}
+   const bomb=Math.random()<.22,c=el('div','cg',bomb?'💣':'🪙');c.style.left=(Math.random()*85)+'%';c.style.animationDuration=(1.6+Math.random()*1.2)+'s';
+   c.onpointerdown=()=>{if(c.dataset.x)return;c.dataset.x=1;sc=Math.max(0,sc+(bomb?-3:1));score.textContent=sc;c.remove()};c.onanimationend=()=>c.remove();area.append(c)},330);
+  const t=setInterval(async()=>{if(!document.body.contains(area)){clearInterval(t);clearInterval(sp);return}
+   left--;go.textContent='Осталось '+left+' с';
+   if(left<=0){clearInterval(t);clearInterval(sp);run=false;area.textContent='';
+    if(sc<1)res.textContent='Счёт 0 — попробуй ещё раз';
+    else try{const n=await earnClaim(sc);res.textContent='🎉 Выплата: +'+n+' косок (счёт '+sc+')';res.className='gres win';snd.win(0)}catch(e){errW(e);res.textContent='Счёт: '+sc}
+    go.textContent='Играть ещё';go.disabled=false}},1000)};
+ p.append(el('div','sub','Лови монеты 🪙 (+1) и не трогай бомбы 💣 (−3). Награда = счёт, до '+CL_MAX+' косок. Общий лимит с кликером: '+CL_DAY+' в сутки.'),score,area,go,res)}
+async function startShift(j){try{const r=await ensureWallet();await updateDoc(r,{jobId:j[0],jobStart:serverTimestamp()});toast('Смена началась: '+j[1])}catch(e){errW(e)}}
+async function finishShift(j){try{const [r,d]=await walletNow();await updateDoc(r,{coins:(d.coins||0)+j[3],jobId:''});toast('💼 Смена окончена: +'+j[3]+' косок');snd.win(1)}catch(e){errW('Ещё рано — подожди пару секунд и нажми снова')}}
+function wShifts(p){
+ const box=el('div','cbody');p.append(box);let key='',lbl=null,zone=null,tm=null;
+ const job=()=>JOBS.find(j=>j[0]===wal.jobId),leftOf=j=>tms(wal.jobStart)+j[2]-Date.now();
+ const render=()=>{box.textContent='';const j=job();
+  if(j){const left=leftOf(j),r=el('div','perk');r.append(el('b','',j[1]+' — идёт смена'));
+   if(left>0){const bar=el('div','dbar');zone=el('div','dzone');bar.append(zone);lbl=el('div','sub');r.append(bar,lbl)}
+   else{const b=el('button','p','Забрать '+j[3]+' 🪙');b.onclick=()=>finishShift(j);r.append(el('div','sub','Смена закончена!'),b)}
+   box.append(r)}
+  else JOBS.forEach(x=>{const r=el('div','perk'),b=el('button','p','Начать смену');b.onclick=()=>startShift(x);r.append(el('b','',x[1]),el('div','sub','Длится '+fmtT(x[2]/1000*1000).replace(/ 0с$/,'')+' · награда '+x[3]+' 🪙'),b);box.append(r)})};
+ const tick=()=>{if(!document.body.contains(box)){clearInterval(tm);return}
+  const j=job(),left=j?leftOf(j):0,k=[wal.jobId||'',tms(wal.jobStart),j&&left>0].join('|');
+  if(k!==key){key=k;render()}
+  if(j&&left>0&&lbl){lbl.textContent='Осталось '+fmtT(left)+' · награда '+j[3]+' 🪙';zone.style.width=Math.min(100,100*(1-left/j[2]))+'%'}};
+ tm=setInterval(tick,1000);tick();
+ p.append(el('div','sub','Начни смену и закрой вкладку: награда ждёт, когда время выйдет. Одновременно идёт одна смена.'))}
+function wDaily(p){
+ const r=el('div','perk'),b=el('button','p','🎁 Забрать '+DAILY+' 🪙'),t=el('div','sub');r.append(el('b','','Ежедневный бонус'),t,b);p.append(r);
+ let tm=null;const upd=()=>{if(!document.body.contains(r)){clearInterval(tm);return}const left=864e5-(Date.now()-tms(wal.daily));
+  if(wal.daily&&left>0){b.disabled=true;t.textContent='Следующий бонус через '+fmtT(left)}else{b.disabled=false;t.textContent='Заходи каждый день: +'+DAILY+' косок'}};
+ tm=setInterval(upd,1000);upd();
+ b.onclick=async()=>{b.disabled=true;try{const [w,d]=await walletNow();await updateDoc(w,{coins:(d.coins||0)+DAILY,daily:serverTimestamp()});toast('🎁 +'+DAILY+' косок!');snd.win(1)}catch(e){errW(e)}upd()}}
+function openWork(tab){openMod('💼 Работа',c=>{
+ const top=el('div','cbalrow');top.innerHTML='🪙 <b id="cbal">'+bal+'</b> косок · <span class="sub">зарабатывай и трать в магазине, кейсах и апгрейдере</span>';c.append(top);
+ const tabs=el('div','tabs'),body=el('div','cbody'),G=[wClick,wCatch,wShifts,wDaily];
+ ['🖱️ Кликер','🪙 Ловец','⏱️ Смены','🎁 Бонус'].forEach((n,i)=>{const b=el('button',i===tab?'on':'',n);
+  b.onclick=()=>{[...tabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');body.textContent='';G[i](body)};tabs.append(b)});
+ c.append(tabs,body);G[tab](body)})}
+$('#work').onclick=()=>openWork(0);
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];

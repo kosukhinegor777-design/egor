@@ -184,6 +184,60 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.owner == 'house'
         && getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.soldFor >= 1
         && request.resource.data.coins == resource.data.coins + getAfter(/databases/$(database)/documents/gifts/$(request.resource.data.sold)).data.soldFor;
+
+      // свой кошелёк с нуля: нужен, чтобы начать зарабатывать
+      allow create: if request.auth != null && request.auth.uid == id
+        && request.resource.data.keys().hasOnly(['coins'])
+        && request.resource.data.coins == 0;
+
+      // ежедневный бонус: +150 раз в 24 часа
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'daily'])
+        && request.resource.data.daily == request.time
+        && (!('daily' in resource.data) || resource.data.daily.toMillis() + 86400000 <= request.time.toMillis())
+        && request.resource.data.coins == resource.data.coins + 150;
+
+      // смена: начать (одна смена за раз)
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['jobId', 'jobStart'])
+        && request.resource.data.jobId in ['courier', 'mover', 'coder', 'night']
+        && request.resource.data.jobStart == request.time
+        && (!('jobId' in resource.data) || resource.data.jobId == '');
+
+      // смена: забрать награду, когда время вышло
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'jobId'])
+        && request.resource.data.jobId == ''
+        && (
+          (resource.data.jobId == 'courier' && resource.data.jobStart.toMillis() + 300000 <= request.time.toMillis()
+            && request.resource.data.coins == resource.data.coins + 25)
+          || (resource.data.jobId == 'mover' && resource.data.jobStart.toMillis() + 1800000 <= request.time.toMillis()
+            && request.resource.data.coins == resource.data.coins + 150)
+          || (resource.data.jobId == 'coder' && resource.data.jobStart.toMillis() + 7200000 <= request.time.toMillis()
+            && request.resource.data.coins == resource.data.coins + 600)
+          || (resource.data.jobId == 'night' && resource.data.jobStart.toMillis() + 28800000 <= request.time.toMillis()
+            && request.resource.data.coins == resource.data.coins + 2800));
+
+      // кликер и ловец монет: до 30 косок раз в 30 секунд, не больше 1500 за 24 часа
+      allow update: if request.auth != null && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'clickT', 'earn', 'earnT'])
+        && request.resource.data.coins > resource.data.coins
+        && request.resource.data.coins - resource.data.coins <= 30
+        && request.resource.data.clickT == request.time
+        && (!('clickT' in resource.data) || resource.data.clickT.toMillis() + 30000 <= request.time.toMillis())
+        && (
+          (!('earnT' in resource.data)
+            && request.resource.data.earnT == request.time
+            && request.resource.data.earn == request.resource.data.coins - resource.data.coins)
+          || ('earnT' in resource.data
+            && resource.data.earnT.toMillis() + 86400000 <= request.time.toMillis()
+            && request.resource.data.earnT == request.time
+            && request.resource.data.earn == request.resource.data.coins - resource.data.coins)
+          || ('earnT' in resource.data
+            && request.time.toMillis() < resource.data.earnT.toMillis() + 86400000
+            && request.resource.data.earnT == resource.data.earnT
+            && request.resource.data.earn == resource.data.earn + (request.resource.data.coins - resource.data.coins)
+            && request.resource.data.earn <= 1500));
     }
 
     // приколы: пишет только админ, читает только адресат
