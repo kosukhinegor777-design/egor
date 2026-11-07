@@ -389,7 +389,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 24</div>
+   <div class="ver">Версия 25</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -424,6 +424,16 @@ import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,o
 
 const $=s=>document.querySelector(s);
 const hideBoot=()=>{window.__egorReady=1;const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),500)}};
+/* ---- замена эмодзи, которых нет на устройстве (на старых Windows вместо них квадраты) ---- */
+{const FBK={'🪙':'💰','🪖':'⛑️','🪩':'🔮','🪔':'🏺','🪆':'🎎','🪄':'✨','🫨':'😵','🫧':'💧','🪽':'🕊️','🪬':'🧿','🪐':'🌑','🫶':'💖','🥹':'🥺'},keys=Object.keys(FBK),okc={};
+ const ok=ch=>{if(okc[ch]!==undefined)return okc[ch];let r=true;try{const c=document.createElement('canvas');c.width=c.height=40;const x=c.getContext('2d',{willReadFrequently:true});
+   x.font='30px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';x.fillStyle='#000';x.textBaseline='top';x.fillText(ch,2,2);
+   const d=x.getImageData(0,0,40,40).data;r=false;for(let i=0;i<d.length;i+=4){if(d[i+3]>100&&Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2])>40){r=true;break}}}catch(e){r=true}
+  return okc[ch]=r};
+ const fixNode=n=>{let t=n.nodeValue,c=false;if(!t)return;for(const k of keys)if(t.includes(k)&&!ok(k)){t=t.split(k).join(FBK[k]);c=true}if(c)n.nodeValue=t};
+ const fixTree=r=>{if(r.nodeType===3)return fixNode(r);if(r.nodeType!==1)return;const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())fixNode(n)};
+ fixTree(document.body);
+ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(fixTree))).observe(document.body,{childList:true,subtree:true})}
 /* ---- системная кнопка «Назад» (Android / жест) ---- */
 {const isMob=()=>matchMedia('(max-width:700px)').matches,
  layers=[
