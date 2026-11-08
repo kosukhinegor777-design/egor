@@ -372,6 +372,11 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 .mb.bench::after{content:"⚒";position:absolute;inset:0;display:grid;place-items:center;color:#ffe9b0;font-size:calc(var(--cs)*.6);text-shadow:0 1px 3px #000}
 .pk{position:absolute;left:0;top:0;width:var(--cs);height:var(--cs);display:grid;place-items:center;font-size:calc(var(--cs)*.85);transition:left .26s ease-in,top .26s ease-in,opacity .2s;pointer-events:none;z-index:3;filter:sepia(1) saturate(2) hue-rotate(-12deg)}
 .pk.l1{filter:grayscale(1) brightness(1.1)}.pk.l2{filter:grayscale(.2) brightness(1.45)}.pk.l3{filter:hue-rotate(150deg) saturate(2.6) drop-shadow(0 0 6px #4eeadf)}.pk.l4{filter:hue-rotate(255deg) saturate(2.4) brightness(.8) drop-shadow(0 0 8px #a855f7)}
+
+#banned{position:fixed;inset:0;z-index:300;background:rgba(5,5,12,.97);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px}
+.bcard{max-width:360px}.bcard h2{margin:6px 0}.bcard .sub{color:#b9bddb}
+.pl{max-height:48vh;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--bg);border-radius:14px;margin:10px 0}
+.pl .m{max-width:92%}
 </style>
 </head>
 <body>
@@ -403,7 +408,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 27</div>
+   <div class="ver">Версия 28</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -418,6 +423,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 </div>
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
 <div id="lb"><img alt=""></div>
+<div id="banned"><div class="bcard"><div style="font-size:64px">🚫</div><h2>Вы заблокированы</h2><div id="bwhy" class="sub"></div><div id="buntil" class="sub"></div><button class="p" id="bout" style="margin-top:14px">Выйти</button></div></div>
 <div id="mod"><div class="card"></div></div>
 <div id="call">
  <div id="rvw"><video id="rv" autoplay playsinline></video></div>
@@ -434,7 +440,7 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 import firebaseConfig from './firebase-config.js';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp,getCountFromServer} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
 const hideBoot=()=>{window.__egorReady=1;const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),500)}};
@@ -574,7 +580,7 @@ document.addEventListener('visibilitychange',()=>{markRead();if(!document.hidden
 
 /* ---- чаты ---- */
 function renderList(){
- const L=$('#list');L.textContent='';if(!friendsLoaded){skRows(L,7);return}if(!friends.size)L.append(el('div','empty','Пока нет друзей'));
+ const L=$('#list');L.textContent='';if(!friendsLoaded){skRows(L,7);return}chRows(L);if(!friends.size)L.append(el('div','empty','Пока нет друзей'));
  [...friends].sort((a,b)=>(last[b[0]]?.ts||0)-(last[a[0]]?.ts||0)||a[1].name.localeCompare(b[1].name)).forEach(([id,f])=>{
   const on=isOn(id),r=el('div','ct'+(cur===id?' on':''));
   const a=avEl(id,f.name);if(on)a.classList.add('on');r.append(a);
@@ -608,7 +614,7 @@ function renderMsgs(){
  if(stick){const fix=()=>{B.scrollTop=B.scrollHeight};fix();requestAnimationFrame(fix);setTimeout(fix,120);B.querySelectorAll('img').forEach(im=>{if(!im.complete)im.addEventListener('load',fix)})}
  else B.scrollTop=prevTop;
 }
-async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
+async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;if(isMuted())return toast('🔇 Вы в муте');$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
  try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
 $('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
 $('#back').onclick=()=>$('#app').classList.remove('chat');
@@ -632,6 +638,10 @@ function listen(){
  onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
+ onSnapshot(collection(db,'channels'),s=>{chans={};s.docs.forEach(d=>chans[d.id]=d.data());renderList();watchCh()},()=>{});
+ onSnapshot(collection(db,'users',uid,'chans'),s=>{myCh=new Set(s.docs.map(d=>d.id));renderList();watchCh()},()=>{});
+ onSnapshot(doc(db,'bans',uid),s=>{ban=s.exists()?s.data():null;applyMod()},()=>{});
+ onSnapshot(doc(db,'mutes',uid),s=>{mute=s.exists()?s.data():null;applyMod()},()=>{});
  onSnapshot(collection(db,'cases'),s=>{casesC={};s.docs.forEach(d=>casesC[d.id]=d.data())});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());catLoaded=true;renderMsgs();tryRe()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
@@ -820,6 +830,23 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
  Object.entries(casesC).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'📦')+' '+x.name+' · 🪙'+x.price));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена кейса:',x.price);if(v===null||!(+v>=1))return;await updateDoc(doc(db,'cases',id),{price:Math.floor(+v)});openAdmin()};
   const b=el('button','','🗑');b.onclick=async()=>{if(confirm('Удалить кейс «'+x.name+'»?')){await deleteDoc(doc(db,'cases',id));openAdmin()}};const ib=el('button','','🖼️');ib.title='Фото кейса';ib.onclick=()=>{const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(f.files[0]){await updateDoc(doc(db,'cases',id),{img:await shrink(f.files[0],320,.82,true)});toast('Фото кейса обновлено');openAdmin()}};f.click()};r.append(ib,pb,b);c.append(r)});
+ sec(c,'🔨 Модерация');const mf=el('div','form');
+ mf.innerHTML='<input class="mu" placeholder="Юзернейм"><select class="md"><option value="3600000">1 час</option><option value="86400000">1 день</option><option value="604800000">7 дней</option><option value="0">Навсегда</option></select><input class="mr" placeholder="Причина (необязательно)"><div class="row"><button class="mb1">🚫 Бан</button><button class="mb2">✅ Разбан</button></div><div class="row"><button class="mb3">🔇 Мут</button><button class="mb4">🔊 Размут</button></div><div class="row"><button class="mb5">🖼 Забрать NFT…</button><button class="mb6">⭐ Забрать Косухость+</button></div>';c.append(mf);
+ const who=async()=>{const u=q(mf,'.mu').value.trim().replace(/^@/,'').toLowerCase(),o=await uidOf(u);if(!o){toast('Пользователь не найден');return null}return{u,o}},
+  till=()=>{const d=+q(mf,'.md').value;return d?Date.now()+d:0},why=()=>q(mf,'.mr').value.trim().slice(0,100);
+ const punish=(col,ic)=>async()=>{const w=await who();if(!w)return;if(admSet.has(w.o)||w.o===uid)return toast('Нельзя наказывать админов и себя');
+  await setDoc(doc(db,col,w.o),{until:till(),reason:why(),name:w.u,by:me,ts:Date.now()});toast(ic+' @'+w.u+': готово');openAdmin()};
+ const lift=col=>async()=>{const w=await who();if(!w)return;await deleteDoc(doc(db,col,w.o));toast('Снято с @'+w.u);openAdmin()};
+ q(mf,'.mb1').onclick=punish('bans','🚫');q(mf,'.mb2').onclick=lift('bans');q(mf,'.mb3').onclick=punish('mutes','🔇');q(mf,'.mb4').onclick=lift('mutes');
+ q(mf,'.mb5').onclick=async()=>{const w=await who();if(w)openRevoke(w.o,w.u)};
+ q(mf,'.mb6').onclick=async()=>{const w=await who();if(!w)return;await deleteDoc(doc(db,'premium',w.o));toast('⭐ Косухость+ у @'+w.u+' забрана')};
+ const al=el('div');c.append(al);
+ Promise.all([getDocs(collection(db,'bans')),getDocs(collection(db,'mutes'))]).then(([bs,ms])=>{[[bs,'🚫','bans'],[ms,'🔇','mutes']].forEach(([s,ic,col])=>s.docs.forEach(d=>{const x=d.data();if(x.until&&x.until<Date.now())return;
+  const r=el('div','row');r.append(el('span','',ic+' @'+(x.name||d.id)+' · '+(x.until?'до '+new Date(x.until).toLocaleString():'навсегда')+(x.reason?' · '+x.reason:'')));
+  const bb=el('button','','Снять');bb.onclick=async()=>{await deleteDoc(doc(db,col,d.id));openAdmin()};r.append(bb);al.append(r)}))}).catch(()=>{});
+ sec(c,'📣 Каналы');{const ub=el('button','p',chans.updates?'📣 Канал «Обновления» уже создан':'📣 Создать канал «Обновления» (все подписаны)');ub.disabled=!!chans.updates;
+  ub.onclick=async()=>{await setDoc(doc(db,'channels','updates'),{name:'Обновления',desc:'Новости и обновления Egor',emoji:'📣',img:'',owner:uid,ownerName:me,system:true,ts:Date.now()});toast('Канал «Обновления» создан');openAdmin()};c.append(ub);
+  c.append(el('div','sub','Публиковать в «Обновлениях» могут только админы: открой канал в списке чатов и пиши внизу.'))}
  sec(c,'Каталог подарков');{const rb=el('button','p','🔄 Пополнить все подарки в магазине');rb.style.marginBottom='8px';rb.onclick=restockAll;c.append(rb)}
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
@@ -1195,6 +1222,85 @@ function gMine(p){
    await freshBal()}
   catch(e){errT(e)}go.disabled=false};
  p.append(info,board,tag,go,res)}
+
+
+/* ---- модерация (бан/мут), каналы ---- */
+let ban=null,mute=null,chans={},myCh=new Set(),chLast={},curChannel=null;
+const chW=new Set();
+const isBanned=()=>!!ban&&(ban.until===0||ban.until>Date.now()),isMuted=()=>!!mute&&(mute.until===0||mute.until>Date.now());
+function applyMod(){const b=$('#banned'),bn=isBanned();b.style.display=bn?'flex':'none';
+ if(bn){$('#bwhy').textContent=ban.reason?'Причина: '+ban.reason:'';$('#buntil').textContent=ban.until?'До '+new Date(ban.until).toLocaleString():'Навсегда'}
+ const m=isMuted();['#txt','#send','#att','#emo'].forEach(s=>{const e=$(s);if(e)e.disabled=m});
+ $('#txt').placeholder=m?'🔇 Вы в муте'+(mute.until?' до '+new Date(mute.until).toLocaleString():' навсегда')+(mute.reason?' · '+mute.reason:''):'Сообщение…'}
+setInterval(applyMod,30000);$('#bout').onclick=()=>$('#out').click();
+function openRevoke(o,u){openMod('🖼 NFT у @'+u,c=>{
+ const gs=Object.entries(allG).filter(([,g])=>g.owner===o).map(([id,g])=>({...g,id}));
+ c.append(el('div','sub','Нажми на подарок, чтобы забрать его у @'+u+' (он уйдёт «в казну» насовсем).'));
+ const g=el('div','grid');
+ gs.forEach(x=>g.append(giftEl(x,async()=>{if(!confirm('Забрать «'+((cat[x.type]||{}).name||'подарок')+(x.n?' №'+x.n:'')+'» у @'+u+'?'))return;
+  try{await updateDoc(doc(db,'gifts',x.id),{owner:'house',revoked:true});toast('Забрано');setTimeout(()=>openRevoke(o,u),500)}catch(e){toast('Не удалось')}})));
+ if(!gs.length)g.append(el('div','sub','У пользователя нет подарков'));c.append(g);
+ if(gs.length){const all=el('button','p','Забрать ВСЕ ('+gs.length+')');all.style.marginTop='12px';
+  all.onclick=async()=>{if(!confirm('Забрать все подарки у @'+u+'?'))return;const b=writeBatch(db);gs.slice(0,400).forEach(x=>b.update(doc(db,'gifts',x.id),{owner:'house',revoked:true}));await b.commit();toast('Все подарки забраны');setTimeout(()=>openRevoke(o,u),500)};c.append(all)}
+ const back=el('button','','← В админ-панель');back.style.marginTop='8px';back.onclick=openAdmin;c.append(back)})}
+
+const seenKey=c=>'egor_chs_'+c,chSeen=c=>{try{return +localStorage.getItem(seenKey(c))||0}catch(e){return 0}};
+const chUnseen=c=>!!(chLast[c]&&chLast[c].ts>chSeen(c)&&chLast[c].from!==uid);
+const canPost=cid=>{const x=chans[cid];return !!x&&!isBanned()&&!isMuted()&&(isAdm||(x.owner===uid&&!x.system))};
+function watchCh(){Object.keys(chans).forEach(cid=>{if(chW.has(cid)||!(chans[cid].system||myCh.has(cid)))return;chW.add(cid);
+ onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(1)),s=>s.docChanges().forEach(ch=>{if(ch.type!=='added')return;const p=ch.doc.data();chLast[cid]=p;
+  if(p.from!==uid&&p.ts>boot&&!(curChannel===cid&&mod.style.display==='grid')){toast('📣 '+((chans[cid]||{}).name||'Канал')+': новая запись');snd.recv()}renderList()}),()=>{})})}
+function chRows(L){
+ const row=(icon,title,sub,badge,fn)=>{const r=el('div','ct'),a=el('div','av',icon),w=el('div','w');a.style.fontSize='24px';w.append(el('div','nm',title),el('div','sub',sub));r.append(a,w);if(badge)r.append(el('span','bd',badge));r.onclick=fn;L.append(r)};
+ if(chans.updates)row('📣','Обновления',chLast.updates?(chLast.updates.text||'📷 Фото').slice(0,60):'Новости Egor',chUnseen('updates')?'NEW':'',()=>openChannel('updates'));
+ const n=Object.keys(chans).filter(k=>chans[k].system||myCh.has(k)).length;
+ row('📢','Каналы',n?n+' подписок · найти и создать':'Найди и создай канал',[...myCh].some(chUnseen)?'●':'',openChannels)}
+async function joinCh(id){const b=writeBatch(db);b.set(doc(db,'channels',id,'subs',uid),{ts:Date.now()});b.set(doc(db,'users',uid,'chans',id),{ts:Date.now()});await b.commit()}
+async function leaveCh(id){const b=writeBatch(db);b.delete(doc(db,'channels',id,'subs',uid));b.delete(doc(db,'users',uid,'chans',id));await b.commit()}
+async function delChannel(cid){if(!confirm('Удалить канал «'+chans[cid].name+'» со всеми записями?'))return;
+ try{const ps=await getDocs(collection(db,'channels',cid,'posts')),b=writeBatch(db);ps.docs.slice(0,400).forEach(d=>b.delete(d.ref));b.delete(doc(db,'channels',cid));await b.commit();mod.style.display='none';toast('Канал удалён')}catch(e){toast('Не удалось удалить')}}
+function openChannel(cid){
+ const x=chans[cid];if(!x)return toast('Канал не найден');curChannel=cid;
+ openMod((x.emoji||'📢')+' '+x.name,c=>{
+  c.append(el('div','sub',(x.desc||'')+(x.system?' · системный канал':'')));
+  const bar=el('div','row'),cnt=el('span','sub','');bar.append(cnt);
+  if(!x.system){const joined=myCh.has(cid),jb=el('button',joined?'':'p',joined?'Отписаться':'Подписаться');jb.onclick=async()=>{try{joined?await leaveCh(cid):await joinCh(cid);openChannel(cid)}catch(e){toast('Не удалось')}};bar.append(jb)}
+  if(isAdm||x.owner===uid){const d=el('button','','🗑 Удалить канал');d.onclick=()=>delChannel(cid);bar.append(d)}
+  c.append(bar);
+  if(x.system)cnt.textContent='📣 Все пользователи Egor подписаны';else getCountFromServer(collection(db,'channels',cid,'subs')).then(s=>{cnt.textContent='👥 '+s.data().count}).catch(()=>{});
+  const pl=el('div','pl');pl.id='chp_'+cid;skMsgs(pl);c.append(pl);
+  if(canPost(cid)){const ta=document.createElement('textarea'),row=el('div','row'),at=el('button','','🖼️'),fi=document.createElement('input'),pb=el('button','p','Опубликовать');let img='';
+   ta.placeholder='Новая запись…';ta.maxLength=2000;ta.rows=2;ta.style.cssText='width:100%;font:inherit;padding:10px;border-radius:12px;background:var(--bg);color:var(--text);border:1px solid var(--line);resize:vertical';
+   fi.type='file';fi.accept='image/*';fi.onchange=async()=>{if(fi.files[0]){try{img=await shrink(fi.files[0],1100,.78);at.textContent='🖼️✓'}catch(e){toast('Не удалось обработать фото')}}};at.onclick=()=>fi.click();
+   pb.onclick=async()=>{const t=ta.value.trim();if(!t&&!img)return;pb.disabled=true;
+    try{await addDoc(collection(db,'channels',cid,'posts'),{from:uid,text:t.slice(0,2000),img,ts:Date.now()});ta.value='';img='';at.textContent='🖼️';snd.send()}catch(e){toast('Не удалось опубликовать')}pb.disabled=false};
+   row.append(at,pb);c.append(ta,row)}
+  else c.append(el('div','sub',isMuted()?'🔇 Вы в муте':x.system?'Здесь публикуют только администраторы Egor.':'Здесь публикует только автор канала.'));
+  const un=onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(100)),s=>{if(!document.body.contains(pl)){un();return}
+   pl.textContent='';const ps=s.docs.map(d=>({...d.data(),id:d.id}));if(!ps.length)pl.append(el('div','empty','Пока нет записей'));
+   let last='';ps.forEach(p=>{const dk=new Date(p.ts).toDateString();if(dk!==last){last=dk;pl.append(dayLabel(p.ts))}
+    const m=el('div','m');if(p.img){const im=el('img');im.src=p.img;im.onclick=()=>zoom(p.img);m.append(im)}if(p.text)m.append(document.createTextNode(p.text));
+    const sm=el('small','',new Date(p.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    if(isAdm||x.owner===uid){const del=el('button','','🗑');del.style.cssText='padding:2px 8px;margin-left:8px;font-size:12px';del.onclick=async()=>{if(confirm('Удалить запись?'))await deleteDoc(doc(db,'channels',cid,'posts',p.id))};sm.append(del)}
+    m.append(sm);pl.append(m)});
+   pl.scrollTop=pl.scrollHeight;if(ps.length){chLast[cid]=ps[ps.length-1];try{localStorage.setItem(seenKey(cid),ps[ps.length-1].ts)}catch(e){}renderList()}},()=>{});
+ },true)}
+function openChannels(){openMod('📢 Каналы',c=>{
+ const card=id=>{const x=chans[id],r=el('div','perk');r.style.cssText='display:flex;gap:12px;align-items:center;cursor:pointer';
+  let a;if(x.img){a=el('img');a.src=x.img;a.style.cssText='width:48px;height:48px;border-radius:14px;object-fit:cover;flex:none'}else{a=el('div','av',x.emoji||'📢');a.style.fontSize='22px'}
+  const w=el('div'),t=el('div','nm',x.name+(chUnseen(id)?' ●':''));w.style.flex='1';w.append(t,el('div','sub',(x.desc||'')+(x.system?' · системный':'')));r.append(a,w);
+  if(!x.system&&myCh.has(id))r.append(el('span','sub','✓ подписан'));r.onclick=()=>openChannel(id);return r};
+ const ids=Object.keys(chans).sort((a,b)=>(chans[b].system?1:0)-(chans[a].system?1:0)||chans[b].ts-chans[a].ts),mine=ids.filter(k=>chans[k].system||myCh.has(k)),rest=ids.filter(k=>!mine.includes(k));
+ sec(c,'Мои каналы');mine.forEach(k=>c.append(card(k)));if(!mine.length)c.append(el('div','sub','Пока нет. Подпишись на любой канал ниже.'));
+ sec(c,'Все каналы');rest.forEach(k=>c.append(card(k)));if(!rest.length)c.append(el('div','sub','Других каналов пока нет — создай свой!'));
+ sec(c,'➕ Создать канал');const f=el('div','form');
+ f.innerHTML='<input class="chn" maxlength="40" placeholder="Название канала"><input class="chd" maxlength="200" placeholder="Описание"><input class="che" maxlength="4" placeholder="Эмодзи канала (📢)"><div class="sub">Обложка (необязательно):</div><input class="chf" type="file" accept="image/*"><button class="p chb">Создать канал</button>';c.append(f);
+ f.querySelector('.chb').onclick=async()=>{const name=f.querySelector('.chn').value.trim(),file=f.querySelector('.chf').files[0];
+  if(name.length<2)return toast('Название от 2 символов');
+  if(Object.values(chans).filter(x=>x.owner===uid&&!x.system).length>=5)return toast('Можно создать не больше 5 каналов');
+  try{const id='ch'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+   await setDoc(doc(db,'channels',id),{name,desc:f.querySelector('.chd').value.trim(),emoji:f.querySelector('.che').value.trim()||'📢',img:file?await shrink(file,160,.82,true):'',owner:uid,ownerName:me,system:false,ts:Date.now()});
+   await joinCh(id);toast('Канал создан');setTimeout(()=>openChannel(id),400)}catch(e){toast('Не удалось создать канал')}}},true)}
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
