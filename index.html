@@ -377,6 +377,11 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
 .bcard{max-width:360px}.bcard h2{margin:6px 0}.bcard .sub{color:#b9bddb}
 .pl{max-height:48vh;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--bg);border-radius:14px;margin:10px 0}
 .pl .m{max-width:92%}
+
+#chbar{display:none;margin:0 18px 18px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);align-items:center;justify-content:center;gap:8px;text-align:center;min-height:56px}
+#chbar button{width:100%;border-radius:22px;padding:13px;font-size:16px}
+.m.cp{max-width:92%;align-self:flex-start}
+@media (max-width:700px){#chbar{margin:0 10px 10px}}
 </style>
 </head>
 <body>
@@ -408,17 +413,18 @@ html[data-hol] .brand>img{box-shadow:0 6px 22px color-mix(in srgb,var(--brand) 6
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 28</div>
+   <div class="ver">Версия 29</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
  </aside>
  <section id="main">
   <div id="head"><button id="back">←</button><span id="hav"></span><div class="t"><div class="nm" id="title">Выбери чат</div><div class="sub" id="st"></div></div>
-   <button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
+   <button id="chi" title="О канале" style="display:none">ℹ️</button><button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
   <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
   <div id="emp"></div>
   <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send" aria-label="Отправить">➤</button></div>
+  <div id="chbar"></div>
  </section>
 </div>
 <input type="file" id="fimg" accept="image/*" hidden><input type="file" id="fav" accept="image/*" hidden>
@@ -508,7 +514,7 @@ async function shrink(file,max,q,square){
  else{const k=Math.min(1,max/Math.max(bm.width,bm.height));c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(bm,0,0,c.width,c.height)}
  return c.toDataURL('image/jpeg',q);
 }
-async function sendImage(f){
+async function sendImage(f){if(curCh)return postImage(f);
  if(!cur||!f||!f.type.startsWith('image/'))return;
  const ph=el('div','sk sk-b');ph.style.cssText='width:38%;height:150px;align-self:flex-end';$('#msgs').append(ph);$('#msgs').scrollTop=1e9;
  try{let u=isPrem(uid)?await shrink(f,1600,.9):await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,1100,.75);if(u.length>900000)u=await shrink(f,700,.6);
@@ -589,13 +595,13 @@ function renderList(){
 }
 function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
-function openChat(f){
+function openChat(f){curCh=null;curChannel=null;if(chUn){chUn();chUn=null}setChatMode();
  cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;forceBottom=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
  unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());msgLoading=false;renderMsgs();markRead()});
 }
 function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
  return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
-function renderMsgs(){
+function renderMsgs(){if(curCh){renderPosts();return}
  const B=$('#msgs');B.style.background=(isPrem(uid)&&profs[uid]&&profs[uid].wall>0)?WALLS[profs[uid].wall]:'';const atBottom=B.scrollHeight-B.scrollTop-B.clientHeight<140,prevTop=B.scrollTop,stick=forceBottom||atBottom;B.textContent='';if(msgLoading){skMsgs(B);return}forceBottom=false;if(!msgs.length)B.append(el('div','empty',cur?'Пока пусто. Напиши первым!':'Выбери чат'));
  let lastDay='';
  msgs.forEach((m,i)=>{const dk=new Date(m.ts).toDateString();if(dk!==lastDay){lastDay=dk;B.append(dayLabel(m.ts))}
@@ -614,7 +620,7 @@ function renderMsgs(){
  if(stick){const fix=()=>{B.scrollTop=B.scrollHeight};fix();requestAnimationFrame(fix);setTimeout(fix,120);B.querySelectorAll('img').forEach(im=>{if(!im.complete)im.addEventListener('load',fix)})}
  else B.scrollTop=prevTop;
 }
-async function sendMsg(){const t=$('#txt').value.trim();if(!t||!cur)return;if(isMuted())return toast('🔇 Вы в муте');$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
+async function sendMsg(){if(curCh)return sendPost();const t=$('#txt').value.trim();if(!t||!cur)return;if(isMuted())return toast('🔇 Вы в муте');$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
  try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
 $('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
 $('#back').onclick=()=>$('#app').classList.remove('chat');
@@ -633,13 +639,13 @@ let isAdm=false;
 let bal=0,maxN={},allG={},firstPrem=true,prevPrem=0,lastTroll=0,trollOn=true;
 try{trollOn=localStorage.getItem('egor_troll')!=='0'}catch(e){}
 function listen(){
- onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();isAdm?admSet.add(uid):admSet.delete(uid);$('#adm').style.display=isAdm?'':'none';renderList();head()});
+ onSnapshot(doc(db,'admins',uid),s=>{isAdm=s.exists();isAdm?admSet.add(uid):admSet.delete(uid);$('#adm').style.display=isAdm?'':'none';renderList();head();if(curCh)setChBar()});
  onSnapshot(collection(db,'admins'),s=>{admSet=new Set([...s.docs.map(d=>d.id),...(isAdm?[uid]:[])]);renderMe();renderList();head();renderMsgs()},()=>{});
  onSnapshot(collection(db,'premium'),s=>{prem={};s.docs.forEach(d=>prem[d.id]=d.data().until);
   const u=prem[uid]||0;if(!firstPrem&&u>prevPrem&&u>Date.now())celebrate({emoji:'⭐',title:'Косухость+ активирована!',sub:'Действует до '+new Date(u).toLocaleDateString(),rarity:3,stars:true});
   prevPrem=u;firstPrem=false;renderMe();renderList();head();renderMsgs()});
- onSnapshot(collection(db,'channels'),s=>{chans={};s.docs.forEach(d=>chans[d.id]=d.data());renderList();watchCh()},()=>{});
- onSnapshot(collection(db,'users',uid,'chans'),s=>{myCh=new Set(s.docs.map(d=>d.id));renderList();watchCh()},()=>{});
+ onSnapshot(collection(db,'channels'),s=>{chans={};s.docs.forEach(d=>chans[d.id]=d.data());renderList();watchCh();if(curCh){if(!chans[curCh])closeChPane();else setChBar()}},()=>{});
+ onSnapshot(collection(db,'users',uid,'chans'),s=>{myCh=new Set(s.docs.map(d=>d.id));renderList();watchCh();if(curCh)setChBar()},()=>{});
  onSnapshot(doc(db,'bans',uid),s=>{ban=s.exists()?s.data():null;applyMod()},()=>{});
  onSnapshot(doc(db,'mutes',uid),s=>{mute=s.exists()?s.data():null;applyMod()},()=>{});
  onSnapshot(collection(db,'cases'),s=>{casesC={};s.docs.forEach(d=>casesC[d.id]=d.data())});
@@ -911,7 +917,8 @@ function openProfile(id){
    sec(c,'Вся коллекция ('+all.length+')');const b=el('div','grid');all.forEach(g=>b.append(giftEl(g)));if(!all.length)b.append(el('div','sub','Пусто'));c.append(b);
    const gb=el('button','p','🎁 Подарить');gb.style.marginTop='12px';gb.onclick=()=>{mod.style.display='none';openChat(id);setTimeout(openGifts,60)};c.append(gb)}
  })}
-$('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>cur&&openProfile(cur);
+$('#hav').onclick=$('#title').onclick=$('#st').onclick=()=>curCh?openChannelInfo(curCh):cur&&openProfile(cur);
+$('#chi').onclick=()=>curCh&&openChannelInfo(curCh);
 
 
 /* ---- казино и апгрейдер (только виртуальные коски) ---- */
@@ -1231,7 +1238,7 @@ const isBanned=()=>!!ban&&(ban.until===0||ban.until>Date.now()),isMuted=()=>!!mu
 function applyMod(){const b=$('#banned'),bn=isBanned();b.style.display=bn?'flex':'none';
  if(bn){$('#bwhy').textContent=ban.reason?'Причина: '+ban.reason:'';$('#buntil').textContent=ban.until?'До '+new Date(ban.until).toLocaleString():'Навсегда'}
  const m=isMuted();['#txt','#send','#att','#emo'].forEach(s=>{const e=$(s);if(e)e.disabled=m});
- $('#txt').placeholder=m?'🔇 Вы в муте'+(mute.until?' до '+new Date(mute.until).toLocaleString():' навсегда')+(mute.reason?' · '+mute.reason:''):'Сообщение…'}
+ $('#txt').placeholder=m?'🔇 Вы в муте'+(mute.until?' до '+new Date(mute.until).toLocaleString():' навсегда')+(mute.reason?' · '+mute.reason:''):(curCh?'Новая запись…':'Сообщение…');if(curCh)setChBar()}
 setInterval(applyMod,30000);$('#bout').onclick=()=>$('#out').click();
 function openRevoke(o,u){openMod('🖼 NFT у @'+u,c=>{
  const gs=Object.entries(allG).filter(([,g])=>g.owner===o).map(([id,g])=>({...g,id}));
@@ -1249,42 +1256,75 @@ const chUnseen=c=>!!(chLast[c]&&chLast[c].ts>chSeen(c)&&chLast[c].from!==uid);
 const canPost=cid=>{const x=chans[cid];return !!x&&!isBanned()&&!isMuted()&&(isAdm||(x.owner===uid&&!x.system))};
 function watchCh(){Object.keys(chans).forEach(cid=>{if(chW.has(cid)||!(chans[cid].system||myCh.has(cid)))return;chW.add(cid);
  onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(1)),s=>s.docChanges().forEach(ch=>{if(ch.type!=='added')return;const p=ch.doc.data();chLast[cid]=p;
-  if(p.from!==uid&&p.ts>boot&&!(curChannel===cid&&mod.style.display==='grid')){toast('📣 '+((chans[cid]||{}).name||'Канал')+': новая запись');snd.recv()}renderList()}),()=>{})})}
+  if(p.from!==uid&&p.ts>boot&&!(curCh===cid&&(!matchMedia('(max-width:700px)').matches||$('#app').classList.contains('chat')))){toast('📣 '+((chans[cid]||{}).name||'Канал')+': новая запись');snd.recv()}renderList()}),()=>{})})}
+const chAv=x=>{const d=el('div','av',x.img?'':(x.emoji||'📢'));d.style.fontSize='24px';if(x.img)d.style.backgroundImage='url('+x.img+')';return d};
 function chRows(L){
- const row=(icon,title,sub,badge,fn)=>{const r=el('div','ct'),a=el('div','av',icon),w=el('div','w');a.style.fontSize='24px';w.append(el('div','nm',title),el('div','sub',sub));r.append(a,w);if(badge)r.append(el('span','bd',badge));r.onclick=fn;L.append(r)};
- if(chans.updates)row('📣','Обновления',chLast.updates?(chLast.updates.text||'📷 Фото').slice(0,60):'Новости Egor',chUnseen('updates')?'NEW':'',()=>openChannel('updates'));
- const n=Object.keys(chans).filter(k=>chans[k].system||myCh.has(k)).length;
- row('📢','Каналы',n?n+' подписок · найти и создать':'Найди и создай канал',[...myCh].some(chUnseen)?'●':'',openChannels)}
+ const mine=Object.keys(chans).filter(k=>chans[k].system||myCh.has(k)).sort((a,b)=>(chans[b].system?1:0)-(chans[a].system?1:0)||((chLast[b]||{}).ts||0)-((chLast[a]||{}).ts||0));
+ mine.forEach(k=>{const x=chans[k],r=el('div','ct'+(curCh===k?' on':'')),w=el('div','w'),lp=chLast[k];
+  w.append(el('div','nm',x.name),el('div','sub',lp?((lp.text||'📷 Фото')+'').slice(0,60):(x.system?'Новости Egor':(x.desc||'Канал'))));
+  r.append(chAv(x),w);if(chUnseen(k))r.append(el('span','bd','NEW'));r.onclick=()=>openChannel(k);L.append(r)});
+ const r=el('div','ct'),a=el('div','av','➕'),w=el('div','w');a.style.fontSize='22px';w.append(el('div','nm','Найти или создать канал'),el('div','sub','Каналы как в Telegram'));r.append(a,w);r.onclick=openChannels;L.append(r)}
 async function joinCh(id){const b=writeBatch(db);b.set(doc(db,'channels',id,'subs',uid),{ts:Date.now()});b.set(doc(db,'users',uid,'chans',id),{ts:Date.now()});await b.commit()}
 async function leaveCh(id){const b=writeBatch(db);b.delete(doc(db,'channels',id,'subs',uid));b.delete(doc(db,'users',uid,'chans',id));await b.commit()}
 async function delChannel(cid){if(!confirm('Удалить канал «'+chans[cid].name+'» со всеми записями?'))return;
- try{const ps=await getDocs(collection(db,'channels',cid,'posts')),b=writeBatch(db);ps.docs.slice(0,400).forEach(d=>b.delete(d.ref));b.delete(doc(db,'channels',cid));await b.commit();mod.style.display='none';toast('Канал удалён')}catch(e){toast('Не удалось удалить')}}
+ try{const ps=await getDocs(collection(db,'channels',cid,'posts')),b=writeBatch(db);ps.docs.slice(0,400).forEach(d=>b.delete(d.ref));b.delete(doc(db,'channels',cid));await b.commit();mod.style.display='none';if(curCh===cid)closeChPane();toast('Канал удалён')}catch(e){toast('Не удалось удалить')}}
+let curCh=null,chUn=null,chPosts=[],chLoading=false;
+function setChatMode(){['#gf','#ca','#cv'].forEach(s=>{$(s).style.display=''});$('#chi').style.display='none';$('#bar').style.display='';$('#chbar').style.display='none';$('#st').classList.remove('typ');applyMod()}
+function closeChPane(){curCh=null;curChannel=null;if(chUn){chUn();chUn=null}setChatMode();$('#app').classList.remove('chat');const B=$('#msgs');B.textContent='';B.append(el('div','empty','Канал удалён'));renderList()}
+function chCount(){const x=chans[curCh];if(!x||x.system)return;const id=curCh;getCountFromServer(collection(db,'channels',id,'subs')).then(s=>{if(curCh===id)$('#st').textContent='👥 '+s.data().count+' подписч.'}).catch(()=>{})}
+function setChBar(){const x=chans[curCh];if(!x)return;const post=canPost(curCh),bar=$('#bar'),cb=$('#chbar');
+ bar.style.display=post?'flex':'none';cb.style.display=post?'none':'flex';cb.textContent='';
+ if(!post){
+  if(isMuted())cb.append(el('div','sub','🔇 Вы в муте — писать нельзя'));
+  else if(x.system)cb.append(el('div','sub','📣 Канал администрации Egor · публикуют только админы'));
+  else{const joined=myCh.has(curCh),b=el('button',joined?'':'p',joined?'Отписаться':'Подписаться'),id=curCh;
+   b.onclick=async()=>{b.disabled=true;try{joined?await leaveCh(id):await joinCh(id);chCount()}catch(e){toast('Не удалось')}b.disabled=false};cb.append(b)}}
+ $('#txt').placeholder=isMuted()?$('#txt').placeholder:'Новая запись…'}
 function openChannel(cid){
- const x=chans[cid];if(!x)return toast('Канал не найден');curChannel=cid;
+ const x=chans[cid];if(!x)return toast('Канал не найден');
+ if(mod.style.display==='grid')mod.style.display='none';
+ if(chUn){chUn();chUn=null}if(unMsgs){unMsgs();unMsgs=null}
+ curCh=cid;curChannel=cid;cur=null;chPosts=[];chLoading=true;forceBottom=true;
+ $('#app').classList.add('chat');['#gf','#ca','#cv'].forEach(s=>{$(s).style.display='none'});$('#chi').style.display='';
+ const t=$('#title');t.classList.remove('rb');t.style.color='';t.textContent=x.name;$('#st').classList.remove('typ');$('#st').textContent=x.system?'📣 Все пользователи Egor':'👥 …';
+ const hv=$('#hav');hv.textContent='';hv.append(chAv(x));
+ setChBar();chCount();renderPosts();renderList();
+ chUn=onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(100)),s=>{if(curCh!==cid)return;chPosts=s.docs.map(d=>({...d.data(),id:d.id}));chLoading=false;renderPosts()},()=>{chLoading=false;if(curCh===cid)renderPosts()});
+ setTimeout(()=>{if(chLoading&&curCh===cid){chLoading=false;renderPosts()}},6000)}
+function renderPosts(){
+ const B=$('#msgs'),x=chans[curCh];if(!x)return;
+ const atBottom=B.scrollHeight-B.scrollTop-B.clientHeight<140,prevTop=B.scrollTop,stick=forceBottom||atBottom;
+ B.style.background='';B.textContent='';
+ if(chLoading){skMsgs(B);return}forceBottom=false;
+ if(!chPosts.length)B.append(el('div','empty','Пока нет записей'));
+ const mgr=isAdm||x.owner===uid;let last='';
+ chPosts.forEach(p=>{const dk=new Date(p.ts).toDateString();if(dk!==last){last=dk;B.append(dayLabel(p.ts))}
+  const m=el('div','m cp');if(p.img){const im=el('img');im.src=p.img;im.onclick=()=>zoom(p.img);m.append(im)}if(p.text)m.append(document.createTextNode(p.text));
+  const sm=el('small','',new Date(p.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  if(mgr){const del=el('button','','🗑');del.style.cssText='padding:2px 8px;margin-left:8px;font-size:12px';del.onclick=async()=>{if(confirm('Удалить запись?'))try{await deleteDoc(doc(db,'channels',curCh,'posts',p.id))}catch(e){toast('Не удалось удалить')}};sm.append(del)}
+  m.append(sm);B.append(m)});
+ if(chPosts.length){chLast[curCh]=chPosts[chPosts.length-1];try{localStorage.setItem(seenKey(curCh),chLast[curCh].ts)}catch(e){}renderList()}
+ if(stick){const fix=()=>{B.scrollTop=B.scrollHeight};fix();requestAnimationFrame(fix);setTimeout(fix,120);B.querySelectorAll('img').forEach(im=>{if(!im.complete)im.addEventListener('load',fix)})}
+ else B.scrollTop=prevTop}
+async function sendPost(){const t=$('#txt').value.trim();if(!t||!curCh)return;if(!canPost(curCh))return toast('Здесь публикует только автор');
+ $('#txt').value='';snd.send();forceBottom=true;
+ try{await addDoc(collection(db,'channels',curCh,'posts'),{from:uid,text:t.slice(0,2000),img:'',ts:Date.now()})}catch(e){toast('Не удалось опубликовать')}}
+async function postImage(f){if(!f||!f.type.startsWith('image/')||!canPost(curCh))return;
+ const ph=el('div','sk sk-b');ph.style.cssText='width:38%;height:150px';$('#msgs').append(ph);
+ try{let u=await shrink(f,1100,.78);if(u.length>900000)u=await shrink(f,700,.6);if(u.length>900000)return toast('Картинка слишком большая');
+  snd.send();forceBottom=true;await addDoc(collection(db,'channels',curCh,'posts'),{from:uid,text:'',img:u,ts:Date.now()})}
+ catch(e){toast('Не удалось опубликовать фото')}finally{ph.remove()}}
+function openChannelInfo(cid){const x=chans[cid];if(!x)return;
  openMod((x.emoji||'📢')+' '+x.name,c=>{
-  c.append(el('div','sub',(x.desc||'')+(x.system?' · системный канал':'')));
-  const bar=el('div','row'),cnt=el('span','sub','');bar.append(cnt);
-  if(!x.system){const joined=myCh.has(cid),jb=el('button',joined?'':'p',joined?'Отписаться':'Подписаться');jb.onclick=async()=>{try{joined?await leaveCh(cid):await joinCh(cid);openChannel(cid)}catch(e){toast('Не удалось')}};bar.append(jb)}
+  const hd=el('div','hero');if(x.img){const i=el('img');i.src=x.img;i.style.cssText='width:96px;height:96px;border-radius:24px;object-fit:cover';hd.append(i)}else hd.append(el('div','e',x.emoji||'📢'));
+  const cnt=el('div','sub','');hd.append(el('h2','',x.name),cnt);c.append(hd);
+  if(x.desc)c.append(el('div','pbio',x.desc));
+  c.append(el('div','sub','Автор: @'+(x.ownerName||'?')+(x.system?' · системный канал, все подписаны':'')));
+  if(x.system)cnt.textContent='📣 Все пользователи Egor';else getCountFromServer(collection(db,'channels',cid,'subs')).then(s=>{cnt.textContent='👥 '+s.data().count+' подписч.'}).catch(()=>{});
+  const bar=el('div','row');bar.style.marginTop='12px';
+  if(!x.system){const joined=myCh.has(cid),jb=el('button',joined?'':'p',joined?'Отписаться':'Подписаться');jb.onclick=async()=>{try{joined?await leaveCh(cid):await joinCh(cid);setTimeout(()=>{openChannelInfo(cid);if(curCh===cid){setChBar();chCount()}},400)}catch(e){toast('Не удалось')}};bar.append(jb)}
   if(isAdm||x.owner===uid){const d=el('button','','🗑 Удалить канал');d.onclick=()=>delChannel(cid);bar.append(d)}
-  c.append(bar);
-  if(x.system)cnt.textContent='📣 Все пользователи Egor подписаны';else getCountFromServer(collection(db,'channels',cid,'subs')).then(s=>{cnt.textContent='👥 '+s.data().count}).catch(()=>{});
-  const pl=el('div','pl');pl.id='chp_'+cid;skMsgs(pl);c.append(pl);
-  if(canPost(cid)){const ta=document.createElement('textarea'),row=el('div','row'),at=el('button','','🖼️'),fi=document.createElement('input'),pb=el('button','p','Опубликовать');let img='';
-   ta.placeholder='Новая запись…';ta.maxLength=2000;ta.rows=2;ta.style.cssText='width:100%;font:inherit;padding:10px;border-radius:12px;background:var(--bg);color:var(--text);border:1px solid var(--line);resize:vertical';
-   fi.type='file';fi.accept='image/*';fi.onchange=async()=>{if(fi.files[0]){try{img=await shrink(fi.files[0],1100,.78);at.textContent='🖼️✓'}catch(e){toast('Не удалось обработать фото')}}};at.onclick=()=>fi.click();
-   pb.onclick=async()=>{const t=ta.value.trim();if(!t&&!img)return;pb.disabled=true;
-    try{await addDoc(collection(db,'channels',cid,'posts'),{from:uid,text:t.slice(0,2000),img,ts:Date.now()});ta.value='';img='';at.textContent='🖼️';snd.send()}catch(e){toast('Не удалось опубликовать')}pb.disabled=false};
-   row.append(at,pb);c.append(ta,row)}
-  else c.append(el('div','sub',isMuted()?'🔇 Вы в муте':x.system?'Здесь публикуют только администраторы Egor.':'Здесь публикует только автор канала.'));
-  const un=onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(100)),s=>{if(!document.body.contains(pl)){un();return}
-   pl.textContent='';const ps=s.docs.map(d=>({...d.data(),id:d.id}));if(!ps.length)pl.append(el('div','empty','Пока нет записей'));
-   let last='';ps.forEach(p=>{const dk=new Date(p.ts).toDateString();if(dk!==last){last=dk;pl.append(dayLabel(p.ts))}
-    const m=el('div','m');if(p.img){const im=el('img');im.src=p.img;im.onclick=()=>zoom(p.img);m.append(im)}if(p.text)m.append(document.createTextNode(p.text));
-    const sm=el('small','',new Date(p.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
-    if(isAdm||x.owner===uid){const del=el('button','','🗑');del.style.cssText='padding:2px 8px;margin-left:8px;font-size:12px';del.onclick=async()=>{if(confirm('Удалить запись?'))await deleteDoc(doc(db,'channels',cid,'posts',p.id))};sm.append(del)}
-    m.append(sm);pl.append(m)});
-   pl.scrollTop=pl.scrollHeight;if(ps.length){chLast[cid]=ps[ps.length-1];try{localStorage.setItem(seenKey(cid),ps[ps.length-1].ts)}catch(e){}renderList()}},()=>{});
- },true)}
+  c.append(bar)})}
 function openChannels(){openMod('📢 Каналы',c=>{
  const card=id=>{const x=chans[id],r=el('div','perk');r.style.cssText='display:flex;gap:12px;align-items:center;cursor:pointer';
   let a;if(x.img){a=el('img');a.src=x.img;a.style.cssText='width:48px;height:48px;border-radius:14px;object-fit:cover;flex:none'}else{a=el('div','av',x.emoji||'📢');a.style.fontSize='22px'}
