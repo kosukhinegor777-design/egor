@@ -429,6 +429,23 @@ service cloud.firestore {
           && request.resource.data.from == request.auth.uid
           && (!('sticker' in request.resource.data) || isPremium())
           && request.auth.uid in get(/databases/$(database)/documents/friendships/$(chatId)).data.members;
+
+        // правка своего сообщения и реакции участников чата
+        allow update: if request.auth != null && !banned()
+          && request.auth.uid in get(/databases/$(database)/documents/friendships/$(chatId)).data.members
+          && (
+            (resource.data.from == request.auth.uid && !muted()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'edited']))
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reacts'])
+                && !('reacts' in resource.data)
+                && request.resource.data.reacts.keys().hasOnly([request.auth.uid]))
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reacts'])
+                && ('reacts' in resource.data)
+                && request.resource.data.reacts.diff(resource.data.reacts).affectedKeys().hasOnly([request.auth.uid])));
+
+        // удалить своё сообщение (админ — любое)
+        allow delete: if request.auth != null
+          && (isAdmin() || (resource.data.from == request.auth.uid && !banned()));
       }
     }
   }

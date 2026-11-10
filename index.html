@@ -440,6 +440,20 @@ button.p:hover::before{transform:translateX(130%)}
 #auth .box::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:linear-gradient(120deg,#6366f1,#ec4899,#22d3ee,#6366f1);background-size:300% 300%;animation:grad 6s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
 #auth h1{font-size:34px;letter-spacing:.01em}
 @media (max-width:700px){#bar{margin:0 10px 10px}#chbar{margin:0 10px 10px}#tobot{right:16px;bottom:84px}.brand{padding-top:max(18px,env(safe-area-inset-top))}}
+
+.act{position:fixed;z-index:90;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px;box-shadow:0 24px 70px rgba(0,0,0,.55);display:flex;flex-direction:column;min-width:200px;animation:pop .18s}
+.act button{text-align:left;background:transparent;padding:10px 12px;border-radius:12px;font-weight:600}.act button:hover{background:var(--their);filter:none}
+.act .ar{display:flex;gap:2px;padding:4px 2px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}.act .ar button{font-size:22px;padding:4px 8px}
+.rq{border-left:3px solid var(--brand);background:rgba(0,0,0,.18);padding:4px 8px;border-radius:8px;margin-bottom:6px;font-size:13px;cursor:pointer}
+.m.me .rq{border-left-color:#fff;background:rgba(255,255,255,.2)}.rq b{display:block;font-size:12px}.rq div{opacity:.85;max-height:2.6em;overflow:hidden}
+.rxs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.rx{padding:2px 9px;border-radius:999px;font-size:13px;background:rgba(0,0,0,.22);color:inherit}.rx.me{outline:2px solid var(--brand)}
+.m.hl{animation:hl 1.3s}@keyframes hl{30%{box-shadow:0 0 0 4px var(--brand)}}
+.vm{display:flex;align-items:center;gap:10px;min-width:220px}.vm button{width:38px;height:38px;border-radius:50%;padding:0;background:rgba(255,255,255,.25);color:inherit;flex:none}
+.vbar{flex:1;height:6px;border-radius:3px;background:rgba(128,128,150,.4);cursor:pointer}.vfill{height:100%;width:0;border-radius:3px;background:currentColor}.vt{font-size:12px;opacity:.85;min-width:34px}
+#rpl{display:none;margin:0 26px -10px;padding:9px 16px 14px;border-radius:20px 20px 0 0;background:var(--panel);border:1px solid var(--line);border-bottom:0;align-items:center;gap:10px;font-size:13px}
+#rpl.show{display:flex}#rpltx{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}#rplx{padding:2px 9px;background:transparent}
+#mic.recording{background:#e5484d!important;color:#fff;animation:recp 1.2s infinite}@keyframes recp{50%{box-shadow:0 0 0 8px rgba(229,72,77,.25)}}
+@media (max-width:700px){#rpl{margin:0 14px -10px}}
 </style>
 </head>
 <body>
@@ -466,12 +480,13 @@ button.p:hover::before{transform:translateX(130%)}
    <button id="work" title="Работа: зарабатывай коски"><b class="mi" style="--c:#10b981">💼</b><i>Работа</i></button>
    <button id="adm" title="Панель админа" style="display:none"><b class="mi" style="--c:#ef4444">🛡️</b><i>Админ-панель</i></button>
    <button id="hol" title="Праздничная тема"><b class="mi" style="--c:#f97316">🎉</b><i>Праздники</i></button>
+   <button id="ntf" title="Уведомления"><b class="mi" style="--c:#06b6d4">🔔</b><i>Уведомления: выкл</i></button>
    <button id="inst" title="Установить приложение"><b class="mi" style="--c:#22c55e">📲</b><i>Установить приложение</i></button>
    <hr>
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 30</div>
+   <div class="ver">Версия 31</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -481,7 +496,8 @@ button.p:hover::before{transform:translateX(130%)}
    <button id="chi" title="О канале" style="display:none">ℹ️</button><button id="gf" title="Подарки">🎁</button><button id="ca">📞</button><button id="cv">🎥</button></div>
   <div id="msgs"><div class="empty">Добавь друга по юзернейму и начни общение</div></div>
   <div id="emp"></div>
-  <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send" aria-label="Отправить">➤</button></div>
+  <div id="rpl"><span id="rpltx"></span><button id="rplx" aria-label="Отмена">✕</button></div>
+  <div id="bar"><button class="ic" id="emo" title="Эмодзи и стикеры">😊</button><button class="ic" id="att" title="Отправить фото">🖼️</button><button class="ic" id="mic" title="Голосовое сообщение">🎤</button><button class="ic" id="micx" title="Отменить запись" style="display:none">✕</button><input id="txt" placeholder="Сообщение…" autocomplete="off"><button class="p" id="send" aria-label="Отправить">➤</button></div>
   <div id="chbar"></div>
   <button id="tobot" aria-label="Вниз">⌄</button>
  </section>
@@ -505,7 +521,7 @@ button.p:hover::before{transform:translateX(130%)}
 import firebaseConfig from './firebase-config.js';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp,getCountFromServer} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,collection,query,where,orderBy,limitToLast,onSnapshot,getDocs,updateDoc,writeBatch,increment,serverTimestamp,getCountFromServer,deleteField} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const $=s=>document.querySelector(s);
 const hideBoot=()=>{window.__egorReady=1;const b=$('#boot');if(b){b.classList.add('out');setTimeout(()=>b.remove(),500)}};
@@ -548,7 +564,7 @@ const ckey=o=>[uid,o].sort().join('_');
 let prem={},cat={},cols={},myGifts=[],profs={};
 const isPrem=id=>(prem[id]||0)>Date.now();
 const isOn=f=>seen[f]&&Date.now()-seen[f]<50000;
-const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.sticker?'Стикер '+x.sticker:x.img&&!x.text?'📷 Фото':x.text):'';
+const prev=x=>x?(x.from===uid?'Вы: ':'')+(x.sticker?'Стикер '+x.sticker:x.voice?'🎤 Голосовое':x.img&&!x.text?'📷 Фото':x.text):'';
 const avEl=(id,name,cls='')=>{const d=el('div','av '+cls,avs[id]?'':(name||'?')[0].toUpperCase());if(avs[id])d.style.backgroundImage=`url(${avs[id]})`;if(isPrem(id))d.classList.add('prem','fr-'+((profs[id]&&profs[id].frame)||'gold'));
  if(!cls.split(' ').includes('nc')){d.style.cursor='pointer';d.onclick=e=>{e.stopPropagation();openProfile(id)}}return d};
 
@@ -634,7 +650,7 @@ function start(id,name){
    if(!presUn[o])presUn[o]=onSnapshot(doc(db,'presence',o),p=>{const v=p.exists()?p.data():{};seen[o]=v.t||0;if(v.av)avs[o]=v.av;cols[o]=v.col||'';renderList();head()});
    if(!lastUn[o])lastUn[o]=onSnapshot(query(collection(db,'friendships',d.id,'messages'),orderBy('ts'),limitToLast(1)),m=>m.docChanges().forEach(ch=>{
     if(ch.type!=='added')return;const x=ch.doc.data();last[o]=x;
-    if(x.from!==uid&&x.ts>boot){if(cur===o&&!document.hidden)snd.recv();else{unread[o]=(unread[o]||0)+1;snd.recv();updTitle()}}
+    if(x.from!==uid&&x.ts>boot){if(cur===o&&!document.hidden)snd.recv();else{unread[o]=(unread[o]||0)+1;snd.recv();updTitle();notify((friends.get(o)||{}).name||'Egor',prev(x))}}
     renderList()}))});
   friendsLoaded=true;renderList();head();{const rd=(friends.get(cur)||{}).read||0;if(rd!==prevRd){prevRd=rd;renderMsgs()}}});
  onSnapshot(collection(db,'users',uid,'signals'),s=>s.docChanges().forEach(ch=>{
@@ -656,9 +672,9 @@ function renderList(){
 }
 function head(){if(cur&&friends.has(cur)){const f=friends.get(cur);applyName($('#title'),cur,f.name);const ty=isTyp(cur);$('#st').textContent=ty?'печатает':'@'+f.name+' · '+(isOn(cur)?'в сети':'не в сети');$('#st').classList.toggle('typ',ty);
  const h=$('#hav');h.textContent='';h.append(avEl(cur,f.name))}}
-function openChat(f){curCh=null;curChannel=null;if(chUn){chUn();chUn=null}setChatMode();
+function openChat(f){clearRpl();curCh=null;curChannel=null;if(chUn){chUn();chUn=null}setChatMode();
  cur=f;prevRd=(friends.get(f)||{}).read||0;unread[f]=0;updTitle();$('#app').classList.add('chat');head();renderList();msgs=[];shown=-1;msgLoading=true;forceBottom=true;setTimeout(()=>{if(msgLoading&&cur===f){msgLoading=false;renderMsgs()}},6000);renderMsgs();unMsgs&&unMsgs();
- unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>d.data());msgLoading=false;renderMsgs();markRead()});
+ unMsgs=onSnapshot(query(collection(db,'friendships',ckey(f),'messages'),orderBy('ts'),limitToLast(200)),s=>{msgs=s.docs.map(d=>({...d.data(),id:d.id}));msgLoading=false;renderMsgs();markRead()});
 }
 function dayLabel(ts){const d=new Date(ts),n=new Date(),y=new Date(n.getFullYear(),n.getMonth(),n.getDate()-1),same=(a,b)=>a.toDateString()===b.toDateString();
  return el('div','dsep',same(d,n)?'Сегодня':same(d,y)?'Вчера':d.toLocaleDateString('ru-RU',d.getFullYear()!==n.getFullYear()?{day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'long'}))}
@@ -668,21 +684,26 @@ function renderMsgs(){if(curCh){renderPosts();return}
  msgs.forEach((m,i)=>{const dk=new Date(m.ts).toDateString();if(dk!==lastDay){lastDay=dk;B.append(dayLabel(m.ts))}
   const d=el('div','m'+(m.from===uid?' me':'')+(shown>=0&&i>=shown?' new':''));
   const col=isPrem(m.from)&&cols[m.from];if(col){d.style.background=`linear-gradient(135deg,${col},${col}bb)`;d.style.color='#fff'}
+  d.dataset.id=m.id||'';
+  if(m.reply){const q=el('div','rq');q.append(el('b','',m.reply.name||''),el('div','',m.reply.text||''));q.onclick=e=>{e.stopPropagation();const t=B.querySelector('[data-id="'+m.reply.id+'"]');if(t){t.scrollIntoView({block:'center',behavior:'smooth'});t.classList.add('hl');setTimeout(()=>t.classList.remove('hl'),1300)}};d.append(q)}
   if(m.gift){const c=cat[m.gift.t]||{name:'Подарок',emoji:'🎁',rarity:0},g=el('div','gcard r'+(c.rarity||0));
    if(c.img){const im=el('img');im.src=c.img;g.append(im)}else g.append(el('div','e',c.emoji||'🎁'));
    g.append(el('b','',c.name),el('div','num',m.gift.n?'NFT №'+m.gift.n:'Подарок'));d.append(g)}
   else if(m.sticker){d.classList.add('stk');d.append(el('div','sticker',m.sticker))}
   else{if(m.img){const im=el('img');im.src=m.img;im.onclick=()=>zoom(m.img);d.append(im)}
-   if(m.text)d.append(document.createTextNode(m.text))}
-  const sm=el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+   if(m.voice)d.append(voiceEl(m));if(m.text)d.append(document.createTextNode(m.text))}
+  const sm=el('small','',new Date(m.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));if(m.edited)sm.insertBefore(document.createTextNode('изменено · '),sm.firstChild);
   if(m.from===uid){const rdv=(friends.get(cur)||{}).read||0,ok=m.ts<=rdv;sm.append(' ',el('span','tk'+(ok?' r':''),ok?'✓✓':'✓'))}
-  d.append(sm);B.append(d)});
+  d.append(sm);const rxs=rxEl(m);if(rxs)d.append(rxs);d.onclick=e=>{if(e.target.closest('img,.vm,.rxs,.rq,button'))return;openActions(m,d)};B.append(d)});
  shown=msgs.length;
  if(stick){const fix=()=>{B.scrollTop=B.scrollHeight};fix();requestAnimationFrame(fix);setTimeout(fix,120);B.querySelectorAll('img').forEach(im=>{if(!im.complete)im.addEventListener('load',fix)})}
  else B.scrollTop=prevTop;
 }
-async function sendMsg(){if(curCh)return sendPost();const t=$('#txt').value.trim();if(!t||!cur)return;if(isMuted())return toast('🔇 Вы в муте');$('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
- try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),{from:uid,text:t.slice(0,2000),ts:Date.now()})}catch(e){alert('Не удалось отправить')}}
+async function sendMsg(){if(curCh)return sendPost();const t=$('#txt').value.trim();if(!t||!cur)return;if(isMuted())return toast('🔇 Вы в муте');
+ if(editing){const e=editing,to=cur;clearRpl();$('#txt').value='';try{await updateDoc(doc(db,'friendships',ckey(to),'messages',e.id),{text:t.slice(0,2000),edited:true})}catch(x){toast('Не удалось изменить')}return}
+ $('#txt').value='';snd.send();forceBottom=true;typSent=0;updateDoc(doc(db,'friendships',ckey(cur)),{['typing.'+uid]:0}).catch(()=>{});
+ const rp=replyTo?{id:replyTo.id,name:replyTo.name,text:replyTo.text}:null;clearRpl();
+ try{await addDoc(collection(db,'friendships',ckey(cur),'messages'),Object.assign({from:uid,text:t.slice(0,2000),ts:Date.now()},rp?{reply:rp}:{}))}catch(e){alert('Не удалось отправить')}}
 $('#send').onclick=sendMsg;$('#txt').onkeydown=e=>{if(e.key==='Enter')sendMsg()};
 $('#back').onclick=()=>$('#app').classList.remove('chat');
 async function addFriend(){
@@ -1298,7 +1319,7 @@ const chW=new Set();
 const isBanned=()=>!!ban&&(ban.until===0||ban.until>Date.now()),isMuted=()=>!!mute&&(mute.until===0||mute.until>Date.now());
 function applyMod(){const b=$('#banned'),bn=isBanned();b.style.display=bn?'flex':'none';
  if(bn){$('#bwhy').textContent=ban.reason?'Причина: '+ban.reason:'';$('#buntil').textContent=ban.until?'До '+new Date(ban.until).toLocaleString():'Навсегда'}
- const m=isMuted();['#txt','#send','#att','#emo'].forEach(s=>{const e=$(s);if(e)e.disabled=m});
+ const m=isMuted();['#txt','#send','#att','#emo','#mic'].forEach(s=>{const e=$(s);if(e)e.disabled=m});
  $('#txt').placeholder=m?'🔇 Вы в муте'+(mute.until?' до '+new Date(mute.until).toLocaleString():' навсегда')+(mute.reason?' · '+mute.reason:''):(curCh?'Новая запись…':'Сообщение…');if(curCh)setChBar()}
 setInterval(applyMod,30000);$('#bout').onclick=()=>$('#out').click();
 function openRevoke(o,u){openMod('🖼 NFT у @'+u,c=>{
@@ -1317,7 +1338,7 @@ const chUnseen=c=>!!(chLast[c]&&chLast[c].ts>chSeen(c)&&chLast[c].from!==uid);
 const canPost=cid=>{const x=chans[cid];return !!x&&!isBanned()&&!isMuted()&&(isAdm||(x.owner===uid&&!x.system))};
 function watchCh(){Object.keys(chans).forEach(cid=>{if(chW.has(cid)||!(chans[cid].system||myCh.has(cid)))return;chW.add(cid);
  onSnapshot(query(collection(db,'channels',cid,'posts'),orderBy('ts'),limitToLast(1)),s=>s.docChanges().forEach(ch=>{if(ch.type!=='added')return;const p=ch.doc.data();chLast[cid]=p;
-  if(p.from!==uid&&p.ts>boot&&!(curCh===cid&&(!matchMedia('(max-width:700px)').matches||$('#app').classList.contains('chat')))){toast('📣 '+((chans[cid]||{}).name||'Канал')+': новая запись');snd.recv()}renderList()}),()=>{})})}
+  if(p.from!==uid&&p.ts>boot&&!(curCh===cid&&(!matchMedia('(max-width:700px)').matches||$('#app').classList.contains('chat')))){toast('📣 '+((chans[cid]||{}).name||'Канал')+': новая запись');snd.recv();notify((chans[cid]||{}).name||'Канал',(p.text||'📷 Фото').slice(0,100))}renderList()}),()=>{})})}
 const chAv=x=>{const d=el('div','av',x.img?'':(x.emoji||'📢'));d.style.fontSize='24px';if(x.img)d.style.backgroundImage='url('+x.img+')';return d};
 function chRows(L){
  const mine=Object.keys(chans).filter(k=>chans[k].system||myCh.has(k)).sort((a,b)=>(chans[b].system?1:0)-(chans[a].system?1:0)||((chLast[b]||{}).ts||0)-((chLast[a]||{}).ts||0));
@@ -1402,6 +1423,70 @@ function openChannels(){openMod('📢 Каналы',c=>{
   try{const id='ch'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
    await setDoc(doc(db,'channels',id),{name,desc:f.querySelector('.chd').value.trim(),emoji:f.querySelector('.che').value.trim()||'📢',img:file?await shrink(file,160,.82,true):'',owner:uid,ownerName:me,system:false,ts:Date.now()});
    await joinCh(id);toast('Канал создан');setTimeout(()=>openChannel(id),400)}catch(e){toast('Не удалось создать канал')}}},true)}
+
+
+/* ---- ответы, правка, удаление, реакции, голосовые, уведомления ---- */
+let replyTo=null,editing=null,rec=null;
+const msgPv=m=>m.text||(m.voice?'🎤 Голосовое':m.img?'📷 Фото':m.sticker?m.sticker:m.gift?'🎁 Подарок':'');
+function showRpl(t){$('#rpltx').textContent=t;$('#rpl').classList.add('show')}
+function clearRpl(){replyTo=null;editing=null;$('#rpl').classList.remove('show')}
+$('#rplx').onclick=()=>{if(editing)$('#txt').value='';clearRpl()};
+function startReply(m){editing=null;replyTo={id:m.id,name:m.from===uid?'Вы':((friends.get(cur)||{}).name||'Друг'),text:msgPv(m).slice(0,80)};showRpl('↩ '+replyTo.name+': '+replyTo.text);$('#txt').focus()}
+function startEdit(m){replyTo=null;editing={id:m.id};$('#txt').value=m.text;showRpl('✏️ Редактирование сообщения');$('#txt').focus()}
+async function delMsg(m){if(!confirm('Удалить сообщение?'))return;try{await deleteDoc(doc(db,'friendships',ckey(cur),'messages',m.id))}catch(e){toast('Не удалось удалить')}}
+async function react(m,e){if(!cur)return;const mine=(m.reacts||{})[uid];
+ try{await updateDoc(doc(db,'friendships',ckey(cur),'messages',m.id),{['reacts.'+uid]:mine===e?deleteField():e})}catch(x){toast('Не удалось поставить реакцию (обнови правила Firebase)')}}
+function rxEl(m){const r=m.reacts;if(!r)return null;const c={};Object.values(r).forEach(e=>{c[e]=(c[e]||0)+1});const ks=Object.keys(c);if(!ks.length)return null;
+ const w=el('div','rxs');ks.forEach(e=>{const b=el('button','rx'+(r[uid]===e?' me':''),e+' '+c[e]);b.onclick=ev=>{ev.stopPropagation();react(m,e)};w.append(b)});return w}
+const closeActions=()=>{const a=document.getElementById('act');if(a)a.remove()};
+function openActions(m,d){closeActions();const a=el('div','act');a.id='act';
+ const rr=el('div','ar');['👍','❤️','😂','🔥','😮','😢'].forEach(e=>{const b=el('button','',e);b.onclick=()=>{closeActions();react(m,e)};rr.append(b)});a.append(rr);
+ const mk=(t,fn)=>{const b=el('button','',t);b.onclick=()=>{closeActions();fn()};a.append(b)};
+ mk('↩ Ответить',()=>startReply(m));
+ if(m.text)mk('📋 Копировать',()=>{navigator.clipboard&&navigator.clipboard.writeText(m.text).then(()=>toast('Скопировано'))});
+ if(m.from===uid&&m.text&&!m.gift&&!m.sticker&&!m.voice)mk('✏️ Изменить',()=>startEdit(m));
+ if(m.from===uid||isAdm)mk('🗑 Удалить',()=>delMsg(m));
+ document.body.append(a);
+ const r=d.getBoundingClientRect(),w=a.offsetWidth,hh=a.offsetHeight;let x=m.from===uid?r.right-w:r.left;x=Math.max(8,Math.min(x,innerWidth-w-8));
+ let y=r.bottom+6;if(y+hh>innerHeight-8)y=Math.max(8,r.top-hh-6);a.style.left=x+'px';a.style.top=y+'px'}
+document.addEventListener('click',e=>{if(!e.target.closest('#act,.m'))closeActions()});
+const fmtV=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function voiceEl(m){const w=el('div','vm'),b=el('button','','▶'),bar=el('div','vbar'),fill=el('div','vfill'),t=el('span','vt',fmtV(m.dur||0));bar.append(fill);w.append(b,bar,t);
+ let au=null;const reset=()=>{b.textContent='▶';fill.style.width='0'};w._reset=reset;
+ b.onclick=e=>{e.stopPropagation();if(au&&!au.paused){au.pause();b.textContent='▶';return}
+  if(!au){au=new Audio(m.voice);w._au=au;au.ontimeupdate=()=>{fill.style.width=(au.duration?100*au.currentTime/au.duration:0)+'%';t.textContent=fmtV(Math.max(0,Math.round((isFinite(au.duration)?au.duration:(m.dur||0))-au.currentTime)))};au.onended=()=>{reset();t.textContent=fmtV(m.dur||0)}}
+  document.querySelectorAll('.vm').forEach(x=>{if(x!==w&&x._au&&!x._au.paused){x._au.pause();x._reset&&x._reset()}});
+  au.play().then(()=>{b.textContent='⏸'}).catch(()=>toast('Не удалось воспроизвести'))};
+ bar.onclick=e=>{e.stopPropagation();if(au&&isFinite(au.duration))au.currentTime=au.duration*(e.offsetX/bar.clientWidth)};
+ return w}
+async function micToggle(){
+ if(curCh||!cur)return toast('Голосовые — только в личных чатах');if(isMuted())return toast('🔇 Вы в муте');
+ if(rec){stopRec(true);return}
+ try{const st=await navigator.mediaDevices.getUserMedia({audio:true}),mt=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'',
+   mr=new MediaRecorder(st,mt?{mimeType:mt,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}),ch=[],t0=Date.now();
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};
+  const timer=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('#txt').placeholder='● Запись '+fmtV(s)+' · нажми ⏹, чтобы отправить';if(s>=60)stopRec(true)},500);
+  rec={mr,ch,st,t0,mt:mr.mimeType||mt||'audio/webm',timer,cancel:false};
+  mr.start();$('#mic').textContent='⏹';$('#mic').classList.add('recording');$('#micx').style.display='';$('#txt').value='';$('#txt').disabled=true}
+ catch(e){toast('Нет доступа к микрофону')}}
+function stopRec(send){const r=rec;if(!r)return;rec=null;r.cancel=!send;clearInterval(r.timer);
+ $('#mic').textContent='🎤';$('#mic').classList.remove('recording');$('#micx').style.display='none';$('#txt').disabled=isMuted();$('#txt').placeholder=curCh?'Новая запись…':'Сообщение…';
+ r.mr.onstop=()=>{r.st.getTracks().forEach(t=>t.stop());if(!r.cancel)sendVoice(r)};try{r.mr.stop()}catch(e){r.st.getTracks().forEach(t=>t.stop())}}
+async function sendVoice(r){const blob=new Blob(r.ch,{type:r.mt}),dur=Math.max(1,Math.round((Date.now()-r.t0)/1000)),to=cur;
+ if(!to||blob.size<1200)return toast('Слишком короткое сообщение');
+ const url=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob)});
+ if(url.length>900000)return toast('Голосовое слишком длинное');
+ snd.send();forceBottom=true;try{await addDoc(collection(db,'friendships',ckey(to),'messages'),{from:uid,text:'',voice:url,dur,ts:Date.now()})}catch(e){toast('Не удалось отправить голосовое')}}
+$('#mic').onclick=micToggle;$('#micx').onclick=()=>stopRec(false);
+const notifOn=()=>{try{return localStorage.getItem('egor_ntf')==='1'&&'Notification' in window&&Notification.permission==='granted'}catch(e){return false}};
+function setNtfLabel(){$('#ntf').innerHTML='<b class="mi" style="--c:#06b6d4">🔔</b><i>Уведомления: '+(notifOn()?'вкл':'выкл')+'</i>'}
+$('#ntf').onclick=async()=>{if(!('Notification' in window))return toast('Браузер не поддерживает уведомления');
+ if(notifOn()){try{localStorage.setItem('egor_ntf','0')}catch(e){}setNtfLabel();return toast('Уведомления выключены')}
+ const p=await Notification.requestPermission();
+ if(p==='granted'){try{localStorage.setItem('egor_ntf','1')}catch(e){}toast('🔔 Включено: придёт уведомление, когда Egor свёрнут')}else toast('Разрешение не дано — включи его в настройках браузера');setNtfLabel()};
+setNtfLabel();
+function notify(title,body){if(!notifOn()||!document.hidden)return;const o={body:String(body||'').slice(0,140),icon:'icon-192.png',tag:'egor-msg',renotify:true};
+ if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification(title,o)).catch(()=>{});else try{new Notification(title,o)}catch(e){}}
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];
