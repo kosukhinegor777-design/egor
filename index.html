@@ -454,6 +454,31 @@ button.p:hover::before{transform:translateX(130%)}
 #rpl.show{display:flex}#rpltx{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}#rplx{padding:2px 9px;background:transparent}
 #mic.recording{background:#e5484d!important;color:#fff;animation:recp 1.2s infinite}@keyframes recp{50%{box-shadow:0 0 0 8px rgba(229,72,77,.25)}}
 @media (max-width:700px){#rpl{margin:0 14px -10px}}
+
+.npc{display:flex;gap:14px;align-items:center;padding:12px;border-radius:18px;background:color-mix(in srgb,var(--text) 5%,transparent);margin:8px 0;flex-wrap:wrap}
+.npe{font-size:46px;width:70px;height:70px;border-radius:18px;display:grid;place-items:center;background:var(--their);flex:none}
+.npc img.npi{width:70px;height:70px;border-radius:18px;object-fit:cover;flex:none}
+.npc .ni{flex:1;min-width:190px}.npc .minrow{font-size:20px;letter-spacing:2px;margin-top:4px}
+.arena{position:relative;height:170px;border-radius:20px;background:radial-gradient(circle at 50% 120%,#475569,#1e293b 70%);overflow:hidden;display:flex;align-items:flex-end;justify-content:space-between;padding:0 9% 18px;font-size:68px}
+.arena .hero,.arena .foe{display:block;line-height:1}.arena .foe img{width:80px;height:80px;border-radius:18px;object-fit:cover}
+.arena.go .hero{animation:lunge .45s ease-in-out 3 alternate}.arena.go .foe{animation:hurt .45s ease-in-out 3 alternate}
+@keyframes lunge{to{transform:translateX(90px) rotate(8deg)}}@keyframes hurt{to{transform:translateX(8px) rotate(-5deg);filter:brightness(1.7)}}
+.arena .spark{position:absolute;left:50%;top:38%;font-size:50px;transform:translateX(-50%) scale(0);opacity:0}
+.arena.go .spark{animation:spark .45s ease-out 3}@keyframes spark{50%{transform:translateX(-50%) scale(1.3);opacity:1}100%{transform:translateX(-50%) scale(.6);opacity:0}}
+.arena.win .foe{animation:fadeOut .8s forwards}.arena.lose .hero{animation:fadeOut .8s forwards}
+@keyframes fadeOut{to{opacity:0;transform:translateY(30px) rotate(20deg)}}
+.sea{position:relative;height:170px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#bae6fd,#38bdf8 60%,#0369a1)}
+.sea::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;background:repeating-radial-gradient(circle at 20px 46px,transparent 0 12px,rgba(255,255,255,.4) 13px 15px);animation:waves 2s linear infinite}
+@keyframes waves{to{background-position:40px 0}}
+.boat{position:absolute;bottom:34px;left:-70px;font-size:62px;transition:left 3.5s linear;animation:bob 1s ease-in-out infinite alternate}@keyframes bob{to{transform:translateY(-6px) rotate(3deg)}}
+.island{border-radius:22px;padding:18px;background:linear-gradient(180deg,#38bdf8,#7dd3fc 38%,#fde68a 39%,#f59e0b);text-align:center;color:#3b2200}.island .nm{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.4);font-size:18px}
+.chests{display:flex;gap:34px;justify-content:center;margin:26px 0 10px;flex-wrap:wrap}
+.chest{position:relative;width:120px;height:100px;cursor:pointer;transition:transform .2s}.chest:hover{transform:translateY(-4px) scale(1.05)}
+.chest .body{position:absolute;left:0;right:0;bottom:0;height:62px;border-radius:8px 8px 12px 12px;background:linear-gradient(180deg,#a0622d,#6b3d17);box-shadow:inset 0 0 0 3px #4a2a0e,0 12px 22px rgba(0,0,0,.4)}
+.chest .body::before{content:"";position:absolute;left:50%;top:-4px;width:26px;height:30px;margin-left:-13px;border-radius:5px;background:linear-gradient(180deg,#fde68a,#d99a00);box-shadow:inset 0 0 0 2px #8a5a00}
+.chest .lid{position:absolute;left:-3px;right:-3px;top:0;height:46px;border-radius:50px 50px 6px 6px/36px 36px 6px 6px;background:linear-gradient(180deg,#b9722f,#7a4a1d);box-shadow:inset 0 0 0 3px #4a2a0e;transform-origin:50% 100%;transition:transform .6s cubic-bezier(.2,1.2,.4,1)}
+.chest.open .lid{transform:translateY(-24px) rotateX(75deg)}
+.chest .in{position:absolute;left:0;right:0;top:22px;text-align:center;font-size:42px;opacity:0;z-index:2;transition:opacity .4s .3s,transform .5s .3s}.chest.open .in{opacity:1;transform:translateY(-30px)}
 </style>
 </head>
 <body>
@@ -481,12 +506,13 @@ button.p:hover::before{transform:translateX(130%)}
    <button id="adm" title="Панель админа" style="display:none"><b class="mi" style="--c:#ef4444">🛡️</b><i>Админ-панель</i></button>
    <button id="hol" title="Праздничная тема"><b class="mi" style="--c:#f97316">🎉</b><i>Праздники</i></button>
    <button id="ntf" title="Уведомления"><b class="mi" style="--c:#06b6d4">🔔</b><i>Уведомления: выкл</i></button>
+   <button id="hunt" title="Охота за сокровищами"><b class="mi" style="--c:#f59e0b">🗺️</b><i>Охота за сокровищами</i></button>
    <button id="inst" title="Установить приложение"><b class="mi" style="--c:#22c55e">📲</b><i>Установить приложение</i></button>
    <hr>
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 31</div>
+   <div class="ver">Версия 32</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -730,6 +756,9 @@ function listen(){
  onSnapshot(collection(db,'users',uid,'chans'),s=>{myCh=new Set(s.docs.map(d=>d.id));renderList();watchCh();if(curCh)setChBar()},()=>{});
  onSnapshot(doc(db,'bans',uid),s=>{ban=s.exists()?s.data():null;applyMod()},()=>{});
  onSnapshot(doc(db,'mutes',uid),s=>{mute=s.exists()?s.data():null;applyMod()},()=>{});
+ onSnapshot(collection(db,'npcs'),s=>{npcsC={};s.docs.forEach(d=>npcsC[d.id]=d.data());huntRefresh()},()=>{});
+ onSnapshot(doc(db,'huntcfg','main'),s=>{huntNeed=s.exists()?(s.data().need||0):0;huntRefresh()},()=>{});
+ onSnapshot(doc(db,'hunt',uid),s=>{hd=s.exists()?s.data():null;huntRefresh()},()=>{});
  onSnapshot(collection(db,'cases'),s=>{casesC={};s.docs.forEach(d=>casesC[d.id]=d.data())});
  onSnapshot(collection(db,'catalog'),s=>{cat={};s.docs.forEach(d=>cat[d.id]=d.data());catLoaded=true;renderMsgs();tryRe()});
  onSnapshot(collection(db,'profiles'),s=>{profs={};s.docs.forEach(d=>profs[d.id]=d.data());renderMe();renderList();head();renderMsgs()});
@@ -935,6 +964,19 @@ function openAdmin(){openMod('🛡️ Панель админа',c=>{
  sec(c,'📣 Каналы');{const ub=el('button','p',chans.updates?'📣 Канал «Обновления» уже создан':'📣 Создать канал «Обновления» (все подписаны)');ub.disabled=!!chans.updates;
   ub.onclick=async()=>{await setDoc(doc(db,'channels','updates'),{name:'Обновления',desc:'Новости и обновления Egor',emoji:'📣',img:'',owner:uid,ownerName:me,system:true,ts:Date.now()});toast('Канал «Обновления» создан');openAdmin()};c.append(ub);
   c.append(el('div','sub','Публиковать в «Обновлениях» могут только админы: открой канал в списке чатов и пиши внизу.'))}
+ sec(c,'🗺️ Охота за сокровищами: NPC');const hf=el('div','form');
+ hf.innerHTML='<input class="hn" maxlength="30" placeholder="Имя NPC (например, Капитан Крюк)"><input class="he" maxlength="4" placeholder="Эмодзи NPC (👺)"><div class="sub">Портрет (необязательно):</div><input class="hf" type="file" accept="image/*"><select class="hd">'+[1,2,3,4,5].map(d=>'<option value="'+d+'">'+'★'.repeat(d)+' Сложность '+d+' · шанс победить босса '+(105-15*d)+'% · бой '+(50*d)+' косок</option>').join('')+'</select><input class="hm" type="number" min="1" max="8" value="3" placeholder="Миньонов (1–8)"><button class="p hb">Добавить NPC</button><div class="sub">Миньон: бой 10 косок, шанс победить 85%. Чтобы начать бой с боссом, надо убить всех его миньонов. Карта собирается, когда получены куски от ВСЕХ NPC. Жетон из сундука продаётся за 5000 косок.</div>';c.append(hf);
+ const syncNeed=async()=>{const n=(await getDocs(collection(db,'npcs'))).size;await setDoc(doc(db,'huntcfg','main'),{need:n})};
+ q(hf,'.hb').onclick=async()=>{const name=q(hf,'.hn').value.trim();if(!name)return toast('Нужно имя NPC');const f=q(hf,'.hf').files[0];
+  await setDoc(doc(db,'npcs','n'+Date.now().toString(36)),{name,emoji:q(hf,'.he').value.trim()||'👺',img:f?await shrink(f,200,.82,true):'',diff:+q(hf,'.hd').value,minions:Math.max(1,Math.min(8,Math.floor(+q(hf,'.hm').value)||3)),ts:Date.now()});
+  await syncNeed();toast('NPC добавлен');openAdmin()};
+ Object.entries(npcsC).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0)).forEach(([id,x])=>{const r=el('div','row');
+  r.append(el('span','',(x.emoji||'👺')+' '+x.name+' · миньонов '+x.minions));
+  const sel=document.createElement('select');[1,2,3,4,5].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent='★'+d+' ('+(105-15*d)+'%)';if(d===x.diff)o.selected=true;sel.append(o)});
+  sel.onchange=async()=>{await updateDoc(doc(db,'npcs',id),{diff:+sel.value});toast('Сложность босса изменена');openAdmin()};
+  const mb=el('button','','✏️');mb.title='Число миньонов';mb.onclick=async()=>{const v=prompt('Сколько миньонов (1–8)?',x.minions);if(v===null)return;await updateDoc(doc(db,'npcs',id),{minions:Math.max(1,Math.min(8,Math.floor(+v)||1))});openAdmin()};
+  const xb=el('button','','🗑');xb.onclick=async()=>{if(confirm('Удалить NPC «'+x.name+'»?')){await deleteDoc(doc(db,'npcs',id));await syncNeed();openAdmin()}};
+  r.append(sel,mb,xb);c.append(r)});
  sec(c,'Каталог подарков');{const rb=el('button','p','🔄 Пополнить все подарки в магазине');rb.style.marginBottom='8px';rb.onclick=restockAll;c.append(rb)}
  Object.entries(cat).forEach(([id,x])=>{const r=el('div','row');r.append(el('span','',(x.emoji||'🖼️')+' '+x.name+(x.free?'':' · NFT')+(x.premium?' · ⭐':'')+(x.price?' · 🪙'+x.price:'')+(x.supply?' · тираж '+x.supply:'')));
   const pb=el('button','','💰');pb.onclick=async()=>{const v=prompt('Новая цена в косках (0 — не продаётся):',x.price||0);if(v===null)return;await updateDoc(doc(db,'catalog',id),{price:Math.max(0,+v||0)});openAdmin()};r.append(pb);
@@ -1487,6 +1529,70 @@ $('#ntf').onclick=async()=>{if(!('Notification' in window))return toast('Бра�
 setNtfLabel();
 function notify(title,body){if(!notifOn()||!document.hidden)return;const o={body:String(body||'').slice(0,140),icon:'icon-192.png',tag:'egor-msg',renotify:true};
  if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification(title,o)).catch(()=>{});else try{new Notification(title,o)}catch(e){}}
+
+
+/* ---- охота за сокровищами ---- */
+let hd=null,npcsC={},huntNeed=0,huntBusy=false,huntBody=null;
+function huntRefresh(){if(!huntBusy&&huntBody&&document.body.contains(huntBody))renderHunt(huntBody)}
+async function ensureHunt(){const r=doc(db,'hunt',uid),s=await getDoc(r);if(!s.exists())await setDoc(r,{m:{},p:{},token:0});return r}
+const bossCh=d=>105-15*d;
+function openHunt(){openMod('🗺️ Охота за сокровищами',c=>{huntBody=el('div');c.append(huntBody);huntBusy=false;renderHunt(huntBody)},true)}
+function renderHunt(root){
+ root.textContent='';const m=(hd&&hd.m)||{},p=(hd&&hd.p)||{},tok=(hd&&hd.token)||0,list=Object.entries(npcsC).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0)),pc=Object.keys(p).length,got=Object.keys(p).filter(k=>npcsC[k]).length;
+ const top=el('div','cbalrow');top.innerHTML='🪙 <b id="cbal">'+bal+'</b> · 🏅 жетонов: <b>'+tok+'</b> · 🗺️ куски карты: <b>'+got+' / '+list.length+'</b>';root.append(top);
+ if(tok>0){const tb=el('button','p','💱 Продать жетон за 5000 🪙 (у тебя: '+tok+')');tb.style.marginBottom='8px';tb.onclick=sellToken;root.append(tb)}
+ if(!list.length){root.append(el('div','sub','Админ ещё не добавил NPC. Загляни позже!'));return}
+ if(huntNeed>0&&pc>=huntNeed){const b=el('div','perk');b.append(el('b','','🗺️ Карта собрана!'),el('div','sub','Плыви на остров и выбери один из двух сундуков. В одном лежит жетон, в другом пусто. Карта сгорает в любом случае.'));
+  const sb=el('button','p','⛵ Отплыть на остров');sb.style.marginTop='8px';sb.onclick=()=>{huntBusy=true;sailTo(root)};b.append(sb);root.append(b)}
+ list.forEach(([id,x])=>{const k=m[id]||0,done=!!p[id],left=Math.max(0,(x.minions||1)-k),card=el('div','npc');
+  if(x.img){const i=el('img','npi');i.src=x.img;card.append(i)}else card.append(el('div','npe',x.emoji||'👺'));
+  const ni=el('div','ni');ni.append(el('b','',x.name),el('div','sub','Сложность: '+'★'.repeat(x.diff)+'☆'.repeat(5-x.diff)+' · шанс победить босса '+bossCh(x.diff)+'%'));
+  ni.append(el('div','minrow',Array.from({length:x.minions},(_,i)=>i<k?'💀':'👹').join(' ')));card.append(ni);
+  if(done)card.append(el('div','nm','🗺️ Кусок карты получен ✓'));
+  else if(left>0){const b=el('button','',`⚔️ Бой с миньоном · −10 🪙 (осталось ${left})`);b.onclick=()=>fight('hmin',id);card.append(b)}
+  else{const b=el('button','p',`👑 Бой с боссом · −${50*x.diff} 🪙`);b.onclick=()=>fight('hboss',id);card.append(b)}
+  root.append(card)});
+ root.append(el('div','sub','Победи миньонов, чтобы сразиться с боссом. Победа над боссом даёт кусок карты. Соберёшь все куски — плыви к сундукам!'))}
+function battleAnim(x,kind,win){return new Promise(res=>{
+ const ar=el('div','arena'),hero=el('span','hero','🤺'),foe=el('span','foe');
+ if(kind==='hboss'&&x.img){const i=el('img');i.src=x.img;foe.append(i)}else foe.textContent=kind==='hmin'?'👹':(x.emoji||'👺');
+ ar.append(hero,el('span','spark','💥'),foe);huntBody.textContent='';huntBody.append(ar,el('div','gres',kind==='hmin'?'Бой с миньоном…':'Бой с боссом «'+x.name+'»…'));
+ void ar.offsetWidth;ar.classList.add('go');[0,.45,.9].forEach(t=>tone(200+t*200,t,.12,.12));
+ setTimeout(()=>{ar.classList.add(win?'win':'lose');tone(win?880:220,0,.3,.14)},1450);setTimeout(res,2400)})}
+async function fight(kind,id){
+ const x=npcsC[id];if(!x||huntBusy)return;const fee=kind==='hmin'?10:50*x.diff;let msg='',ok=false,win=false;
+ try{huntBusy=true;await freshBal();if(bal<fee)throw 'Не хватает косок: нужно '+fee;
+  await ensureHunt();const d=(await getDoc(doc(db,'hunt',uid))).data(),k=(d.m||{})[id]||0;
+  if((d.p||{})[id])throw 'Кусок карты уже у тебя';
+  if(kind==='hmin'&&k>=x.minions)throw 'Миньонов больше нет';if(kind==='hboss'&&k<x.minions)throw 'Сначала победи всех миньонов';
+  const r=await bet({kind,stake:fee,chance:1,debit:fee,npc:id});win=r.T%100<(kind==='hmin'?85:bossCh(x.diff));
+  await battleAnim(x,kind,win);
+  if(win){for(let i=0;i<3&&!ok;i++){try{const b=writeBatch(db),ref=doc(db,'hunt',uid);b.update(doc(db,'bets',r.id),{claimed:true});
+    if(kind==='hmin')b.update(ref,{['m.'+id]:k+1,claim:r.id});else b.update(ref,{['p.'+id]:true,claim:r.id});await b.commit();ok=true}catch(e){await sleep(700)}}
+   msg=ok?(kind==='hmin'?'💀 Миньон повержен!':'🗺️ Босс «'+x.name+'» побеждён — кусок карты твой!'):'Победа есть, но засчитать не удалось — напиши админу';
+   if(ok&&kind==='hboss')celebrate({emoji:'🗺️',title:'Кусок карты!',sub:x.name,rarity:2})}
+  else msg='💥 Поражение… потрачено '+fee+' косок. Попробуй ещё раз!'}
+ catch(e){errW(e)}
+ huntBusy=false;await freshBal();renderHunt(huntBody);if(msg){const g=el('div','gres '+(ok?'win':'lose'),msg);huntBody.prepend(g)}}
+async function sailTo(root){root.textContent='';const sea=el('div','sea'),boat=el('div','boat','⛵');sea.append(boat);root.append(sea,el('div','gres','Плывём на остров с картой сокровищ…'));
+ await sleep(80);boat.style.left='calc(100% - 20px)';[0,.5,1,1.5,2,2.5].forEach(t=>tone(330+t*40,t,.18,.06));await sleep(3600);showIsland(root)}
+function showIsland(root){root.textContent='';const isl=el('div','island'),row=el('div','chests'),res=el('div','gres');let used=false;
+ isl.append(el('div','nm','🏝️ Остров сокровищ — выбери сундук!'));
+ const mk=idx=>{const c=el('div','chest');c.innerHTML='<div class="in"></div><div class="body"></div><div class="lid"></div>';c.title='Сундук '+(idx+1);return c};
+ const chs=[mk(0),mk(1)];chs.forEach((c,idx)=>{const w=el('div');w.style.textAlign='center';w.append(c,el('div','sub','Сундук '+(idx+1)));row.append(w);
+  c.onclick=async()=>{if(used)return;used=true;
+   try{const r=await bet({kind:'hsail',stake:1,chance:1,debit:0,pick:idx},(b,id)=>b.update(doc(db,'hunt',uid),{m:{},p:{},sail:id})),tc=r.T%2,win=tc===idx;
+    const fill=(n,tok)=>{chs[n].querySelector('.in').textContent=tok?'🏅':'💨';chs[n].classList.add('open')};
+    fill(idx,win);tone(win?880:200,0,.3,.14);await sleep(900);fill(1-idx,!win);await sleep(500);
+    if(win){let ok=false;const cur=((hd&&hd.token)||0);for(let i=0;i<3&&!ok;i++){try{const b=writeBatch(db);b.update(doc(db,'bets',r.id),{claimed:true});b.update(doc(db,'hunt',uid),{token:cur+1,claim:r.id});await b.commit();ok=true}catch(e){await sleep(700)}}
+     res.textContent=ok?'🏅 В сундуке жетон! Оставь его себе или продай за 5000 косок.':'Жетон найден, но засчитать не удалось — напиши админу';res.className='gres win';if(ok)celebrate({emoji:'🏅',title:'Жетон найден!',sub:'Можно продать за 5000 косок',rarity:3,stars:true})}
+    else{res.textContent='💨 Пусто… Карта рассыпалась в прах. Начни новую экспедицию!';res.className='gres lose'}}
+   catch(e){errW(e);used=false;return}
+   const nb=el('button','p','Продолжить');nb.style.marginTop='10px';nb.onclick=()=>{huntBusy=false;renderHunt(huntBody)};root.append(nb)}});
+ isl.append(row,res);root.append(isl)}
+async function sellToken(){const t=(hd&&hd.token)||0;if(t<1)return;if(!confirm('Продать жетон за 5000 косок?'))return;
+ try{const [w,d]=await walletNow(),b=writeBatch(db);b.update(doc(db,'hunt',uid),{token:t-1});b.update(w,{coins:(d.coins||0)+5000,tsold:serverTimestamp()});await b.commit();toast('💱 Жетон продан: +5000 косок!');snd.win(2)}catch(e){errW(e)}}
+$('#hunt').onclick=openHunt;
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
 let pc=null,stream=null,peer=null,pend=[],inc=null,vSender=null,camT=null,scrT=null,tInt=null,t0=0,up=false,micOff=false,stops=[];

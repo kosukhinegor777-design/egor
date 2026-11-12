@@ -277,6 +277,14 @@ service cloud.firestore {
         && mineOk(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 1000,
                   request.resource.data.coins - resource.data.coins,
                   get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.stake);
+
+      // продажа жетона из сундука за 5000 косок
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins', 'tsold'])
+        && request.resource.data.tsold == request.time
+        && request.resource.data.coins == resource.data.coins + 5000
+        && get(/databases/$(database)/documents/hunt/$(id)).data.token >= 1
+        && getAfter(/databases/$(database)/documents/hunt/$(id)).data.token == get(/databases/$(database)/documents/hunt/$(id)).data.token - 1;
     }
 
     // приколы: пишет только админ, читает только адресат
@@ -342,6 +350,26 @@ service cloud.firestore {
             && request.resource.data.payout == 0
             && request.resource.data.stake <= 5000
             && request.resource.data.debit == request.resource.data.stake)
+          ||
+          (request.resource.data.kind == 'hmin'
+            && request.resource.data.payout == 0
+            && request.resource.data.stake == 10
+            && request.resource.data.debit == 10
+            && exists(/databases/$(database)/documents/npcs/$(request.resource.data.npc)))
+          ||
+          (request.resource.data.kind == 'hboss'
+            && request.resource.data.payout == 0
+            && request.resource.data.debit == request.resource.data.stake
+            && request.resource.data.stake == 50 * get(/databases/$(database)/documents/npcs/$(request.resource.data.npc)).data.diff)
+          ||
+          (request.resource.data.kind == 'hsail'
+            && request.resource.data.payout == 0
+            && request.resource.data.stake == 1
+            && request.resource.data.debit == 0
+            && request.resource.data.pick in [0, 1]
+            && get(/databases/$(database)/documents/hunt/$(request.auth.uid)).data.p.size() >= get(/databases/$(database)/documents/huntcfg/main).data.need
+            && getAfter(/databases/$(database)/documents/hunt/$(request.auth.uid)).data.p.size() == 0
+            && getAfter(/databases/$(database)/documents/hunt/$(request.auth.uid)).data.sail == id)
         );
       allow update: if request.auth != null && resource.data.uid == request.auth.uid
         && resource.data.claimed == false && request.resource.data.claimed == true
@@ -390,6 +418,89 @@ service cloud.firestore {
     // мои подписки на каналы
     match /users/{id}/chans/{cid} {
       allow read, write: if request.auth != null && !banned() && request.auth.uid == id;
+    }
+
+    // охота за сокровищами: NPC и настройки создаёт админ
+    match /npcs/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /huntcfg/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // прогресс игрока: все переходы проверяются правилами по исходу боя (серверное время ставки)
+    match /hunt/{id} {
+      allow read: if request.auth != null && (request.auth.uid == id || isAdmin());
+      allow write: if isAdmin();
+      allow create: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.keys().hasOnly(['m', 'p', 'token'])
+        && request.resource.data.m.size() == 0 && request.resource.data.p.size() == 0
+        && request.resource.data.token == 0;
+
+      // победа над миньоном
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['m', 'claim'])
+        && request.resource.data.claim is string
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.kind == 'hmin'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == false
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == true
+        && get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.bet == request.resource.data.claim
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 100) < 85
+        && request.resource.data.m.diff(resource.data.m).affectedKeys().hasOnly([get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc])
+        && (
+          (!(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.m) && request.resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] == 1)
+          || (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.m
+              && resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] < get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.minions
+              && request.resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] == resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] + 1));
+
+      // победа над боссом (нужны все миньоны) — кусок карты
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['p', 'claim'])
+        && request.resource.data.claim is string
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.kind == 'hboss'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == false
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == true
+        && get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.bet == request.resource.data.claim
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 100) < 105 - 15 * get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.diff
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.m
+        && resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] >= get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.minions
+        && !(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.p)
+        && request.resource.data.p.diff(resource.data.p).affectedKeys().hasOnly([get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc])
+        && request.resource.data.p[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] == true;
+
+      // отплытие на остров: карта сгорает, ставка на сундук создаётся в той же записи
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['m', 'p', 'sail'])
+        && request.resource.data.sail is string
+        && request.resource.data.m.size() == 0 && request.resource.data.p.size() == 0
+        && !exists(/databases/$(database)/documents/bets/$(request.resource.data.sail))
+        && existsAfter(/databases/$(database)/documents/bets/$(request.resource.data.sail))
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.sail)).data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.sail)).data.kind == 'hsail';
+
+      // жетон найден в выбранном сундуке
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['token', 'claim'])
+        && request.resource.data.claim is string
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.kind == 'hsail'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == false
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == true
+        && resource.data.sail == request.resource.data.claim
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 2) == get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.pick
+        && request.resource.data.token == resource.data.token + 1;
+
+      // продажа жетона (коски зачисляются в той же записи)
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['token'])
+        && resource.data.token >= 1
+        && request.resource.data.token == resource.data.token - 1
+        && getAfter(/databases/$(database)/documents/wallets/$(id)).data.tsold == request.time
+        && getAfter(/databases/$(database)/documents/wallets/$(id)).data.coins == get(/databases/$(database)/documents/wallets/$(id)).data.coins + 5000;
     }
 
     match /usernames/{name} {
