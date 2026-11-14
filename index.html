@@ -479,6 +479,25 @@ button.p:hover::before{transform:translateX(130%)}
 .chest .lid{position:absolute;left:-3px;right:-3px;top:0;height:46px;border-radius:50px 50px 6px 6px/36px 36px 6px 6px;background:linear-gradient(180deg,#b9722f,#7a4a1d);box-shadow:inset 0 0 0 3px #4a2a0e;transform-origin:50% 100%;transition:transform .6s cubic-bezier(.2,1.2,.4,1)}
 .chest.open .lid{transform:translateY(-24px) rotateX(75deg)}
 .chest .in{position:absolute;left:0;right:0;top:22px;text-align:center;font-size:42px;opacity:0;z-index:2;transition:opacity .4s .3s,transform .5s .3s}.chest.open .in{opacity:1;transform:translateY(-30px)}
+
+.aw{position:relative;border-radius:20px;overflow:hidden;background:#0b0d14;user-select:none;-webkit-user-select:none;touch-action:none}
+.aw canvas{display:block;width:100%;height:auto;transition:filter .15s}
+.ahud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;gap:16px;padding:10px 14px;z-index:3;pointer-events:none}
+.hbw{flex:1;max-width:44%;color:#fff;font-weight:700;font-size:13px;text-shadow:0 1px 3px #000}.hbw.r{text-align:right}
+.hb{height:12px;border-radius:8px;background:rgba(0,0,0,.55);overflow:hidden;margin-top:4px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.hb i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#84cc16);transition:width .15s}
+.hbw.r .hb i{background:linear-gradient(90deg,#ef4444,#f97316);margin-left:auto}
+.bnr{position:absolute;left:0;right:0;top:56%;height:19%;background:#000;display:flex;align-items:center;justify-content:center;z-index:4;opacity:0;transform:scaleY(0);transition:opacity .35s,transform .35s;pointer-events:none}
+.bnr.show{opacity:1;transform:none}
+.bnr span{color:#e11d1d;font-weight:900;letter-spacing:.22em;font-size:clamp(20px,5.5vw,46px);text-transform:uppercase;text-shadow:0 0 22px rgba(255,0,0,.75);font-family:Impact,"Arial Black",system-ui,sans-serif;padding:0 10px;text-align:center}
+.amsg{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:clamp(22px,5vw,40px);font-weight:900;color:#fff;text-shadow:0 3px 14px #000;opacity:0;transition:opacity .2s;z-index:3;pointer-events:none}.amsg.on{opacity:1}
+.aquit{position:absolute;right:10px;bottom:10px;z-index:5;padding:6px 12px;background:rgba(0,0,0,.55);color:#fff;font-size:13px}
+.ahint{position:absolute;left:12px;bottom:10px;z-index:3;font-size:12px;color:rgba(255,255,255,.7);pointer-events:none;text-shadow:0 1px 3px #000}
+.tc{display:none;position:absolute;left:0;right:0;bottom:46px;z-index:5;pointer-events:none;justify-content:space-between;padding:0 18px}
+.tc .joy{pointer-events:auto;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.3);display:grid;place-items:center;touch-action:none}
+.tc .knob{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.55)}
+.tc .atk{pointer-events:auto;width:84px;height:84px;border-radius:50%;font-size:34px;padding:0;background:rgba(239,68,68,.78);color:#fff;align-self:flex-end}
+@media (pointer:coarse){.tc{display:flex}.ahint{display:none}}
 </style>
 </head>
 <body>
@@ -512,7 +531,7 @@ button.p:hover::before{transform:translateX(130%)}
    <button id="mute" title="Звуки"><b class="mi" style="--c:#06b6d4">🔔</b><i>Звуки включены</i></button>
    <button id="theme" title="Светлая / тёмная тема"><b class="mi" style="--c:#64748b">🌓</b><i>Тема</i></button>
    <button id="out" title="Выйти"><b class="mi" style="--c:#ef4444">⏻</b><i>Выйти</i></button>
-   <div class="ver">Версия 32</div>
+   <div class="ver">Версия 33</div>
   </div>
   <div id="addrow"><input id="addu" placeholder="🔍 Добавить друга по юзернейму"><button class="p" id="addb">+</button></div>
   <div id="list"></div>
@@ -1537,7 +1556,7 @@ function huntRefresh(){if(!huntBusy&&huntBody&&document.body.contains(huntBody))
 async function ensureHunt(){const r=doc(db,'hunt',uid),s=await getDoc(r);if(!s.exists())await setDoc(r,{m:{},p:{},token:0});return r}
 const bossCh=d=>105-15*d;
 function openHunt(){openMod('🗺️ Охота за сокровищами',c=>{huntBody=el('div');c.append(huntBody);huntBusy=false;renderHunt(huntBody)},true)}
-function renderHunt(root){
+function renderHunt(root){stopHuntMusic();
  root.textContent='';const m=(hd&&hd.m)||{},p=(hd&&hd.p)||{},tok=(hd&&hd.token)||0,list=Object.entries(npcsC).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0)),pc=Object.keys(p).length,got=Object.keys(p).filter(k=>npcsC[k]).length;
  const top=el('div','cbalrow');top.innerHTML='🪙 <b id="cbal">'+bal+'</b> · 🏅 жетонов: <b>'+tok+'</b> · 🗺️ куски карты: <b>'+got+' / '+list.length+'</b>';root.append(top);
  if(tok>0){const tb=el('button','p','💱 Продать жетон за 5000 🪙 (у тебя: '+tok+')');tb.style.marginBottom='8px';tb.onclick=sellToken;root.append(tb)}
@@ -1549,10 +1568,9 @@ function renderHunt(root){
   const ni=el('div','ni');ni.append(el('b','',x.name),el('div','sub','Сложность: '+'★'.repeat(x.diff)+'☆'.repeat(5-x.diff)+' · шанс победить босса '+bossCh(x.diff)+'%'));
   ni.append(el('div','minrow',Array.from({length:x.minions},(_,i)=>i<k?'💀':'👹').join(' ')));card.append(ni);
   if(done)card.append(el('div','nm','🗺️ Кусок карты получен ✓'));
-  else if(left>0){const b=el('button','',`⚔️ Бой с миньоном · −10 🪙 (осталось ${left})`);b.onclick=()=>fight('hmin',id);card.append(b)}
-  else{const b=el('button','p',`👑 Бой с боссом · −${50*x.diff} 🪙`);b.onclick=()=>fight('hboss',id);card.append(b)}
+  else{const b=el('button','p',left>0?`⚔️ В логово · миньонов: ${left}, затем босс`:`👑 К боссу · −${50*x.diff} 🪙`);b.onclick=()=>enterArena(id);card.append(b)}
   root.append(card)});
- root.append(el('div','sub','Победи миньонов, чтобы сразиться с боссом. Победа над боссом даёт кусок карты. Соберёшь все куски — плыви к сундукам!'))}
+ root.append(el('div','sub','Нажми «В логово» и управляй героем сам: WASD — ходьба, правая кнопка мыши — удар мечом (на телефоне — джойстик и кнопка ⚔). Сначала выходят миньоны, потом появляется босс. Победа над боссом даёт кусок карты, соберёшь все — плыви к сундукам!'))}
 function battleAnim(x,kind,win){return new Promise(res=>{
  const ar=el('div','arena'),hero=el('span','hero','🤺'),foe=el('span','foe');
  if(kind==='hboss'&&x.img){const i=el('img');i.src=x.img;foe.append(i)}else foe.textContent=kind==='hmin'?'👹':(x.emoji||'👺');
@@ -1574,8 +1592,18 @@ async function fight(kind,id){
   else msg='💥 Поражение… потрачено '+fee+' косок. Попробуй ещё раз!'}
  catch(e){errW(e)}
  huntBusy=false;await freshBal();renderHunt(huntBody);if(msg){const g=el('div','gres '+(ok?'win':'lose'),msg);huntBody.prepend(g)}}
-async function sailTo(root){root.textContent='';const sea=el('div','sea'),boat=el('div','boat','⛵');sea.append(boat);root.append(sea,el('div','gres','Плывём на остров с картой сокровищ…'));
- await sleep(80);boat.style.left='calc(100% - 20px)';[0,.5,1,1.5,2,2.5].forEach(t=>tone(330+t*40,t,.18,.06));await sleep(3600);showIsland(root)}
+let huntAu=null,huntAuT=null;
+function stopHuntMusic(){if(huntAuT){clearInterval(huntAuT);huntAuT=null}if(huntAu){try{huntAu.pause()}catch(e){}huntAu=null}}
+async function sailTo(root){
+ root.textContent='';const sea=el('div','sea'),boat=el('div','boat','⛵'),skip=el('button','','⏭ Пропустить');skip.style.cssText='position:absolute;right:10px;top:10px;z-index:3;padding:6px 10px;background:rgba(0,0,0,.45);color:#fff';
+ sea.append(boat,skip);root.append(sea,el('div','gres','Плывём на остров с картой сокровищ…'));
+ let done=false;skip.onclick=()=>{done=true};stopHuntMusic();const dur=muted?8:20.4;
+ if(!muted){try{huntAu=new Audio('sail.mp3');huntAu.volume=.75;await huntAu.play()}catch(e){huntAu=null}}
+ huntAuT=setInterval(()=>{if(!document.body.contains(root)||root.offsetParent===null)stopHuntMusic()},1000);
+ boat.style.transition='left '+dur+'s linear';await sleep(80);boat.style.left='calc(100% - 20px)';
+ const t0=Date.now();while(!done&&Date.now()-t0<dur*1000&&document.body.contains(root))await sleep(200);
+ if(huntAu){const au=huntAu;for(let v=.75;v>0;v-=.1){au.volume=Math.max(0,v);await sleep(60)}stopHuntMusic()}
+ if(document.body.contains(root))showIsland(root)}
 function showIsland(root){root.textContent='';const isl=el('div','island'),row=el('div','chests'),res=el('div','gres');let used=false;
  isl.append(el('div','nm','🏝️ Остров сокровищ — выбери сундук!'));
  const mk=idx=>{const c=el('div','chest');c.innerHTML='<div class="in"></div><div class="body"></div><div class="lid"></div>';c.title='Сундук '+(idx+1);return c};
@@ -1592,6 +1620,152 @@ function showIsland(root){root.textContent='';const isl=el('div','island'),row=e
  isl.append(row,res);root.append(isl)}
 async function sellToken(){const t=(hd&&hd.token)||0;if(t<1)return;if(!confirm('Продать жетон за 5000 косок?'))return;
  try{const [w,d]=await walletNow(),b=writeBatch(db);b.update(doc(db,'hunt',uid),{token:t-1});b.update(w,{coins:(d.coins||0)+5000,tsold:serverTimestamp()});await b.commit();toast('💱 Жетон продан: +5000 косок!');snd.win(2)}catch(e){errW(e)}}
+/* ---- арена охоты: герой управляется WASD + ПКМ (исход боя задан заранее честным броском) ---- */
+function makeArena(cv,ui){
+ const W=800,H=450,ctx=cv.getContext('2d'),TAU=Math.PI*2,FONT='"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+ const g={t:0,ft:0,keys:{},mouse:{x:W/2,y:H/2},joy:{x:0,y:0},touch:false,hold:false,atkQ:false,hero:{x:140,y:H/2,r:16,hp:100,max:100,ang:0,cd:0,sw:0,inv:0},e:null,fx:[],txt:[],shake:0,zoom:1,zx:W/2,zy:H/2,gray:0,cine:null,frozen:true,fate:true,over:false,run:false,last:0,raf:0,res:null,warned:false};
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+ const angTo=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),angDiff=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+ let bimg=null;
+ const sfx=k=>{ui.sfx&&ui.sfx(k)},say=(x,y,s,c)=>g.txt.push({x,y,s,c,t:.9});
+ const burst=(x,y,c,n)=>{for(let i=0;i<n;i++){const a=Math.random()*TAU,v=60+Math.random()*160;g.fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:.4+Math.random()*.3,c})}};
+ function hurt(d){const h=g.hero;if(h.inv>0||g.over)return;h.inv=d>0?.5:.4;if(d<=0){say(h.x,h.y-30,'мимо','#cbd5e1');return}
+  h.hp-=d;g.shake=.25;say(h.x,h.y-30,'-'+Math.round(d),'#ff6b6b');burst(h.x,h.y,'#ff4d4d',8);sfx('hurt')}
+ function hitFoe(d){const e=g.e;if(!e)return;e.hp-=d;e.flash=.12;e.x+=Math.cos(g.hero.ang)*(e.boss?8:20);say(e.x,e.y-e.r-12,'-'+d,'#ffe066');burst(e.x,e.y,'#fff3b0',10);g.shake=Math.max(g.shake,.12);sfx('hit')}
+ const aim=()=>{const h=g.hero;if(g.touch&&g.e)return angTo(h,g.e);return Math.atan2(g.mouse.y-h.y,g.mouse.x-h.x)};
+ function swing(){const h=g.hero,e=g.e;if(h.cd>0||g.frozen||g.over)return;h.cd=.42;h.sw=.22;h.ang=aim();sfx('swing');
+  if(e&&dist(h,e)<=82+e.r&&angDiff(angTo(h,e),h.ang)<1.15)hitFoe(10)}
+ function spawn(kind,fate,o){const boss=kind==='boss';
+  g.e=boss?{boss:true,x:W-150,y:H/2,r:38,hp:(120+40*(o.diff||1))*(fate?1:1.5),spd:68,dmg:14,cd:1,flash:0,state:'walk',st:0,emoji:o.emoji||'👺',size:86,alpha:1}
+          :{boss:false,x:W-150,y:H/2,r:18,hp:fate?30:55,spd:96,dmg:6,cd:.6,flash:0,state:'walk',st:0,emoji:'👹',size:40,alpha:1};
+  g.e.max=g.e.hp;bimg=null;if(boss&&o.img&&typeof Image!=='undefined'){bimg=new Image();bimg.src=o.img}}
+ function finish(r){if(g.over)return;g.over=true;g.frozen=true;ui.msg&&ui.msg(r==='win'?'Победа!':'Поражение…');
+  if(r==='win'&&g.e){burst(g.e.x,g.e.y,'#ffd166',30);g.e.dead=true}else{burst(g.hero.x,g.hero.y,'#ff4d4d',30);g.hero.dead=true}
+  setTimeout(()=>{if(g.res){const f=g.res;g.res=null;f(r)}},1300)}
+ function cineStep(dt){const c=g.cine,e=g.e;c.t+=dt;const t=c.t;let z=1,gr=0;
+  if(t<1.2){const k=ease(t/1.2);z=1+1.3*k;gr=k}else if(t<2.8){z=2.3+.03*Math.sin((t-1.2)*3);gr=1}else{const k=ease((t-2.8)/.8);z=2.3-1.3*k;gr=1-k}
+  const kk=clamp((z-1)/1.3,0,1);g.zoom=z;g.zx=W/2+(e.x-W/2)*kk;g.zy=H/2+(e.y-H/2)*kk;g.gray=gr;ui.gray&&ui.gray(gr);
+  if(t>=1&&c.b<1){c.b=1;ui.banner&&ui.banner(c.name,true)}
+  if(t>=2.9&&c.b<2){c.b=2;ui.banner&&ui.banner(c.name,false)}
+  if(t>=3.6){g.cine=null;g.zoom=1;g.zx=W/2;g.zy=H/2;g.gray=0;ui.gray&&ui.gray(0);g.frozen=false;if(c.done)c.done()}}
+ function step(dt){
+  g.t+=dt;const h=g.hero,e=g.e;
+  h.cd=Math.max(0,h.cd-dt);h.sw=Math.max(0,h.sw-dt);h.inv=Math.max(0,h.inv-dt);g.shake=Math.max(0,g.shake-dt);if(e)e.flash=Math.max(0,e.flash-dt);
+  if(g.cine)cineStep(dt);
+  if(!g.frozen&&!g.over&&e){
+   g.ft+=dt;
+   let kx=(g.keys.KeyD?1:0)-(g.keys.KeyA?1:0)+g.joy.x,ky=(g.keys.KeyS?1:0)-(g.keys.KeyW?1:0)+g.joy.y;const m=Math.hypot(kx,ky);if(m>1){kx/=m;ky/=m}
+   h.x=clamp(h.x+kx*235*dt,36,W-36);h.y=clamp(h.y+ky*235*dt,70,H-34);
+   if(h.sw<=0)h.ang=aim();
+   if(g.atkQ||g.hold){g.atkQ=false;swing()}
+   const dd=dist(h,e),a=angTo(e,h),enr=g.fate?1:1+Math.max(0,g.ft-8)/6,spdM=g.fate?1:Math.min(1.5,1+Math.max(0,g.ft-8)/20),dm=e.dmg*enr*((g.fate&&h.hp<30)?0:1);
+   if(!e.boss){
+    if(dd>e.r+h.r+4){e.x+=Math.cos(a)*e.spd*spdM*dt;e.y+=Math.sin(a)*e.spd*spdM*dt}
+    e.cd-=dt;if(dd<=e.r+h.r+10&&e.cd<=0){e.cd=.9;hurt(dm)}
+   }else{
+    e.st+=dt;
+    if(e.state==='walk'){if(dd>e.r+h.r+6){e.x+=Math.cos(a)*e.spd*spdM*dt;e.y+=Math.sin(a)*e.spd*spdM*dt}
+     e.cd-=dt;if(dd<=e.r+h.r+14&&e.cd<=0){e.cd=1.15;hurt(dm)}if(e.st>3.4){e.state='wind';e.st=0;e.da=a}}
+    else if(e.state==='wind'){e.da=a;if(e.st>.75){e.state='dash';e.st=0;e.hit=false}}
+    else if(e.state==='dash'){e.x+=Math.cos(e.da)*430*dt;e.y+=Math.sin(e.da)*430*dt;if(!e.hit&&dist(e,h)<e.r+h.r){e.hit=true;hurt(dm*1.4)}if(e.st>.5){e.state='walk';e.st=0;e.cd=.8}}
+    e.x=clamp(e.x,50,W-50);e.y=clamp(e.y,80,H-50)}
+   if(g.fate){h.hp=Math.max(h.hp,1);if(h.hp<30)h.hp=Math.min(h.max,h.hp+4*dt);if(g.ft>28)e.hp-=10*dt}
+   else{e.hp=Math.max(e.hp,e.max*.12);if(g.ft>9&&!g.warned){g.warned=true;ui.msg&&ui.msg(e.boss?'Босс разъярён!':'Миньон взбешён!')}if(g.ft>30)h.hp-=6*dt}
+   if(g.fate&&e.hp<=0)finish('win');else if(!g.fate&&h.hp<=0)finish('lose')}
+  if(e&&e.dead)e.alpha=Math.max(0,e.alpha-dt*1.2);if(h.dead)h.alpha=Math.max(0,(h.alpha===undefined?1:h.alpha)-dt*1.2);
+  g.fx.forEach(p=>{p.t-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.94;p.vy*=.94});g.fx=g.fx.filter(p=>p.t>0);
+  g.txt.forEach(p=>{p.t-=dt;p.y-=40*dt});g.txt=g.txt.filter(p=>p.t>0)}
+ function drawHero(h){if(h.inv>0&&Math.floor(g.t*20)%2)return;
+  ctx.save();ctx.globalAlpha=h.alpha===undefined?1:h.alpha;ctx.translate(h.x,h.y);
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(0,16,18,7,0,0,TAU);ctx.fill();
+  ctx.fillStyle='#2563eb';ctx.beginPath();ctx.arc(0,2,16,0,TAU);ctx.fill();ctx.fillStyle='#1e40af';ctx.fillRect(-16,4,32,5);
+  ctx.fillStyle='#f1c9a0';ctx.beginPath();ctx.arc(0,-14,9,0,TAU);ctx.fill();ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.arc(0,-16,10,Math.PI,TAU);ctx.fill();
+  ctx.fillStyle='#ef4444';ctx.fillRect(-2,-30,4,9);
+  ctx.rotate(h.ang);const sw=h.sw>0?(h.sw/.22):0,off=sw>0?(1-sw)*1.8-.9:0;ctx.rotate(off);
+  ctx.fillStyle='#d4a017';ctx.fillRect(10,-5,5,10);ctx.fillStyle='#e5e7eb';ctx.fillRect(15,-3,46,6);ctx.fillStyle='#fff';ctx.fillRect(15,-1,46,2);
+  if(sw>0){ctx.rotate(-off);ctx.strokeStyle='rgba(255,255,255,'+(.25+.5*sw)+')';ctx.lineWidth=10;ctx.beginPath();ctx.arc(0,0,64,-.9,.9);ctx.stroke()}
+  ctx.restore()}
+ function drawFoe(e,img){ctx.save();ctx.globalAlpha=e.alpha;
+  if(e.state==='wind'){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.da);ctx.fillStyle='rgba(255,40,40,.28)';ctx.fillRect(0,-22,520,44);ctx.restore()}
+  ctx.translate(e.x,e.y);ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(0,e.r*.8,e.r*1.1,e.r*.35,0,0,TAU);ctx.fill();
+  if(img&&img.complete&&img.naturalWidth){ctx.save();ctx.beginPath();ctx.arc(0,0,e.r+10,0,TAU);ctx.clip();ctx.drawImage(img,-e.r-10,-e.r-10,(e.r+10)*2,(e.r+10)*2);ctx.restore()}
+  else{ctx.font=e.size+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e.emoji,0,0)}
+  if(e.flash>0){ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(0,0,e.r+4,0,TAU);ctx.fill()}
+  if(!e.boss){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(-18,-e.r-14,36,5);ctx.fillStyle='#ef4444';ctx.fillRect(-18,-e.r-14,36*clamp(e.hp/e.max,0,1),5)}
+  ctx.restore()}
+ function draw(){
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
+  ctx.translate(W/2,H/2);ctx.scale(g.zoom,g.zoom);ctx.translate(-g.zx,-g.zy);
+  if(g.shake>0)ctx.translate((Math.random()-.5)*g.shake*28,(Math.random()-.5)*g.shake*28);
+  ctx.fillStyle='#0b0d14';ctx.fillRect(0,0,W,H);const gr=ctx.createRadialGradient(W/2,H/2,60,W/2,H/2,520);gr.addColorStop(0,'#2a2f45');gr.addColorStop(1,'#0b0d14');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;for(let x=0;x<=W;x+=50){ctx.beginPath();ctx.moveTo(x,60);ctx.lineTo(x,H);ctx.stroke()}for(let y=60;y<=H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  ctx.fillStyle='#1b1f2e';ctx.fillRect(0,0,W,60);ctx.fillStyle='#2b3148';ctx.fillRect(0,56,W,6);
+  ctx.font='30px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';[90,W/2,W-90].forEach(x=>ctx.fillText('🔥',x,28));
+  if(g.e)drawFoe(g.e,bimg);drawHero(g.hero);
+  g.fx.forEach(p=>{ctx.globalAlpha=clamp(p.t*2.5,0,1);ctx.fillStyle=p.c;ctx.fillRect(p.x-2,p.y-2,4,4)});ctx.globalAlpha=1;
+  ctx.font='bold 22px sans-serif';ctx.textAlign='center';g.txt.forEach(p=>{ctx.globalAlpha=clamp(p.t*2,0,1);ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.7)';ctx.strokeText(p.s,p.x,p.y);ctx.fillStyle=p.c;ctx.fillText(p.s,p.x,p.y)});ctx.globalAlpha=1;
+  ctx.restore();
+  const vg=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.62);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H)}
+ const kd=e=>{if(e.code==='Escape'){ui.quit&&ui.quit();return}g.keys[e.code]=true;if(['KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code))e.preventDefault()},ku=e=>{g.keys[e.code]=false};
+ const mm=e=>{const r=cv.getBoundingClientRect();g.mouse.x=(e.clientX-r.left)*W/r.width;g.mouse.y=(e.clientY-r.top)*H/r.height};
+ const md=e=>{mm(e);if(e.button===2){e.preventDefault();g.atkQ=true;g.hold=true}},mu=e=>{if(e.button===2)g.hold=false},cm=e=>e.preventDefault();
+ function bind(){cv.addEventListener('mousemove',mm);cv.addEventListener('mousedown',md);cv.addEventListener('contextmenu',cm);window.addEventListener('mouseup',mu);window.addEventListener('keydown',kd);window.addEventListener('keyup',ku)}
+ function unbind(){cv.removeEventListener('mousemove',mm);cv.removeEventListener('mousedown',md);cv.removeEventListener('contextmenu',cm);window.removeEventListener('mouseup',mu);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku)}
+ function loop(ts){if(!g.run)return;if(!document.body.contains(cv)||cv.offsetParent===null){stop();return}
+  const dt=Math.min(.05,(ts-(g.last||ts))/1000);g.last=ts;step(dt);draw();ui.hud&&ui.hud(g);g.raf=requestAnimationFrame(loop)}
+ function start(){if(g.run)return;g.run=true;g.last=0;bind();g.raf=requestAnimationFrame(loop)}
+ function stop(){g.run=false;cancelAnimationFrame(g.raf);unbind();ui.gray&&ui.gray(0);ui.banner&&ui.banner('',false);if(g.res){const f=g.res;g.res=null;f('quit')}}
+ function fight(kind,fate,o){o=o||{};return new Promise(res=>{
+  g.fate=fate;g.ft=0;g.over=false;g.warned=false;g.fx=[];g.txt=[];g.res=res;g.zoom=1;g.zx=W/2;g.zy=H/2;g.cine=null;
+  const h=g.hero;h.x=140;h.y=H/2;h.hp=h.max;h.inv=0;h.cd=0;h.sw=0;h.dead=false;h.alpha=1;
+  spawn(kind,fate,o);g.frozen=true;start();ui.label&&ui.label(kind==='boss'?o.name:(o.label||'Миньон'));
+  const go=()=>{ui.msg&&ui.msg('Бой!');setTimeout(()=>ui.msg&&ui.msg(''),700)};
+  if(kind==='boss')g.cine={t:0,b:0,name:o.name,done:go};else setTimeout(()=>{g.frozen=false;go()},500)})}
+ return {g,fight,stop,step,start,swing};
+}
+
+async function huntClaim(kind,betId,id,k){for(let i=0;i<3;i++){try{const b=writeBatch(db),ref=doc(db,'hunt',uid);b.update(doc(db,'bets',betId),{claimed:true});
+ if(kind==='hmin')b.update(ref,{['m.'+id]:k+1,claim:betId});else b.update(ref,{['p.'+id]:true,claim:betId});await b.commit();return true}catch(e){await sleep(700)}}return false}
+async function enterArena(id){
+ const x=npcsC[id];if(!x||huntBusy)return;huntBusy=true;const root=huntBody;root.textContent='';
+ const aw=el('div','aw');
+ aw.innerHTML='<div class="ahud"><div class="hbw"><span>🤺 Ты</span><div class="hb"><i class="hh"></i></div></div><div class="hbw r"><span class="el">—</span><div class="hb"><i class="he"></i></div></div></div><canvas width="800" height="450"></canvas><div class="bnr"><span></span></div><div class="amsg"></div><div class="tc"><div class="joy"><div class="knob"></div></div><button class="atk">⚔</button></div><button class="aquit">✕ Выйти</button><div class="ahint">WASD — ходьба · ПКМ — удар мечом · Esc — выход</div>';
+ const q=s=>aw.querySelector(s),cv=q('canvas'),bn=q('.bnr'),bt=q('.bnr span'),mg=q('.amsg');
+ root.append(aw,el('div','sub','Исход каждого боя решает честный бросок сервера (шанс указан у босса). Твои движения делают бой зрелищным, а награда защищена от подделки.'));
+ let quit=false,inFight=false,A=null;
+ const ui={gray:v=>{cv.style.filter=v>.001?'grayscale('+v+') contrast('+(1+v*.15)+')':''},
+  banner:(n,s)=>{if(n)bt.textContent=n;bn.classList.toggle('show',!!s)},msg:t=>{mg.textContent=t;mg.classList.toggle('on',!!t)},label:t=>{q('.el').textContent=t},
+  hud:g=>{q('.hh').style.width=Math.max(0,Math.min(100,g.hero.hp/g.hero.max*100))+'%';q('.he').style.width=g.e?Math.max(0,Math.min(100,g.e.hp/g.e.max*100))+'%':'0'},
+  sfx:k=>{if(k==='hit')tone(420,0,.06,.1);else if(k==='swing')tone(250,0,.05,.05);else tone(140,0,.16,.14)},
+  quit:()=>{if(inFight&&!confirm('Выйти из боя? Взнос за этот бой сгорит.'))return;quit=true;A&&A.stop()}};
+ A=makeArena(cv,ui);q('.aquit').onclick=ui.quit;
+ if(matchMedia('(pointer:coarse)').matches)A.g.touch=true;
+ {const joy=q('.joy'),knob=q('.knob'),atk=q('.atk');let jid=null,jc=null;const R=42;
+  const upd=e=>{if(e.pointerId!==jid)return;let dx=e.clientX-jc.x,dy=e.clientY-jc.y;const m=Math.hypot(dx,dy);if(m>R){dx=dx/m*R;dy=dy/m*R}A.g.joy.x=dx/R;A.g.joy.y=dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)'};
+  joy.onpointerdown=e=>{jid=e.pointerId;try{joy.setPointerCapture(jid)}catch(x){}const r=joy.getBoundingClientRect();jc={x:r.left+r.width/2,y:r.top+r.height/2};A.g.touch=true;upd(e)};
+  joy.onpointermove=upd;joy.onpointerup=joy.onpointercancel=()=>{jid=null;A.g.joy.x=A.g.joy.y=0;knob.style.transform=''};
+  atk.onpointerdown=e=>{e.preventDefault();A.g.touch=true;A.g.hold=true;A.g.atkQ=true};atk.onpointerup=atk.onpointerleave=atk.onpointercancel=()=>{A.g.hold=false}}
+ try{
+  await ensureWallet();await ensureHunt();
+  const d=(await getDoc(doc(db,'hunt',uid))).data();let k=(d.m||{})[id]||0,alive=true;
+  if((d.p||{})[id])throw 'Кусок карты уже у тебя';
+  while(k<x.minions&&!quit&&alive){
+   await freshBal();if(bal<10){ui.msg('Не хватает косок: нужно 10');await sleep(1800);alive=false;break}
+   const r=await bet({kind:'hmin',stake:10,chance:1,debit:10,npc:id}),win=r.T%100<85;
+   inFight=true;const res=await A.fight('min',win,{label:'Миньон '+(k+1)+' / '+x.minions});inFight=false;
+   if(res==='quit'){quit=true;break}
+   if(res==='win'){if(await huntClaim('hmin',r.id,id,k)){k++;toast('💀 Миньон повержен ('+k+'/'+x.minions+')')}else{toast('Победа есть, но засчитать не удалось — напиши админу');alive=false}}
+   else{toast('💥 Миньон одолел тебя. Взнос 10 косок потрачен.');alive=false}
+   if(alive)await sleep(400)}
+  if(alive&&!quit&&k>=x.minions){
+   const fee=50*x.diff;await freshBal();
+   if(bal<fee){ui.msg('Не хватает косок для боя с боссом: нужно '+fee);await sleep(2000)}
+   else{const r=await bet({kind:'hboss',stake:fee,chance:1,debit:fee,npc:id}),win=r.T%100<bossCh(x.diff);
+    inFight=true;const res=await A.fight('boss',win,{name:x.name,emoji:x.emoji,img:x.img,diff:x.diff});inFight=false;
+    if(res==='win'){if(await huntClaim('hboss',r.id,id,k))celebrate({emoji:'🗺️',title:'Кусок карты!',sub:x.name,rarity:2});else toast('Победа есть, но засчитать не удалось — напиши админу')}
+    else if(res==='lose')toast('💥 Босс одолел тебя. Взнос '+fee+' косок потрачен.')}}
+ }catch(e){errW(e)}
+ finally{if(A)A.stop();ui.gray(0);huntBusy=false;try{await freshBal()}catch(e){}if(document.body.contains(root))renderHunt(root)}}
 $('#hunt').onclick=openHunt;
 
 /* ---- звонки (WebRTC, сигналы через Firestore) ---- */
