@@ -299,11 +299,11 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == id
         && (!('name' in request.resource.data) || request.resource.data.name.size() <= 24)
         && (!('bio' in request.resource.data) || request.resource.data.bio.size() <= 300)
-        && (isPremium() || !request.resource.data.keys().hasAny(['status', 'nstyle', 'frame', 'banner', 'wall']));
+        && (isPremium() || !request.resource.data.keys().hasAny(['status', 'nstyle', 'frame', 'banner', 'wall', 'skin']));
       allow update: if request.auth != null && !banned() && request.auth.uid == id
         && (!('name' in request.resource.data) || request.resource.data.name.size() <= 24)
         && (!('bio' in request.resource.data) || request.resource.data.bio.size() <= 300)
-        && (isPremium() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'nstyle', 'frame', 'banner', 'wall']));
+        && (isPremium() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'nstyle', 'frame', 'banner', 'wall', 'skin']));
     }
 
     // ставки казино и апгрейдера: исход = миллисекунды серверного времени записи
@@ -361,6 +361,11 @@ service cloud.firestore {
             && request.resource.data.payout == 0
             && request.resource.data.debit == request.resource.data.stake
             && request.resource.data.stake == 50 * get(/databases/$(database)/documents/npcs/$(request.resource.data.npc)).data.diff)
+          ||
+          (request.resource.data.kind == 'hwave'
+            && request.resource.data.payout == 0
+            && request.resource.data.debit == request.resource.data.stake
+            && request.resource.data.stake == 10 * get(/databases/$(database)/documents/npcs/$(request.resource.data.npc)).data.minions)
           ||
           (request.resource.data.kind == 'hsail'
             && request.resource.data.payout == 0
@@ -420,6 +425,12 @@ service cloud.firestore {
       allow read, write: if request.auth != null && !banned() && request.auth.uid == id;
     }
 
+    // скины рыцаря: добавляет админ, выбирают только владельцы Косухость+ (в профиле)
+    match /skins/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     // охота за сокровищами: NPC и настройки создаёт админ
     match /npcs/{id} {
       allow read: if request.auth != null;
@@ -455,6 +466,20 @@ service cloud.firestore {
           || (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.m
               && resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] < get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.minions
               && request.resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] == resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] + 1));
+
+      // победа над волной миньонов (все сразу)
+      allow update: if request.auth != null && !banned() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['m', 'claim'])
+        && request.resource.data.claim is string
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.kind == 'hwave'
+        && get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == false
+        && getAfter(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.claimed == true
+        && get(/databases/$(database)/documents/wallets/$(request.auth.uid)).data.bet == request.resource.data.claim
+        && (get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.t.toMillis() % 100) < 85
+        && request.resource.data.m.diff(resource.data.m).affectedKeys().hasOnly([get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc])
+        && request.resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] == get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.minions
+        && (!(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc in resource.data.m) || resource.data.m[get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc] < get(/databases/$(database)/documents/npcs/$(get(/databases/$(database)/documents/bets/$(request.resource.data.claim)).data.npc)).data.minions);
 
       // победа над боссом (нужны все миньоны) — кусок карты
       allow update: if request.auth != null && !banned() && request.auth.uid == id
